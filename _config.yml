@@ -1,0 +1,14 @@
+title: Tenax
+description: JAX-based tensor network library with symmetry-aware tensors
+url: "https://tenax-lab.github.io"
+baseurl: ""
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
