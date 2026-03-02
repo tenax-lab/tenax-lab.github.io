@@ -1,0 +1,16 @@
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="{{ '/' | relative_url }}">Tenax</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a href="{{ '/mcp/' | relative_url }}" {% if page.url == '/mcp/' %}class="active"{% endif %}>MCP &amp; AI</a>
+      <a href="{{ '/examples/' | relative_url }}" {% if page.url == '/examples/' %}class="active"{% endif %}>Examples</a>
+      <a href="{{ '/benchmarks/' | relative_url }}" {% if page.url == '/benchmarks/' %}class="active"{% endif %}>Benchmarks</a>
+      <a href="{{ '/migration/' | relative_url }}" {% if page.url == '/migration/' %}class="active"{% endif %}>Migration</a>
+      <a href="https://github.com/tenax-lab/tenax" class="nav-external">GitHub</a>
+      <a href="https://tenax-tn.readthedocs.io" class="nav-external">Docs</a>
+    </div>
+  </div>
+</nav>

@@ -78,11 +78,28 @@ layout: default
 <section>
 <div class="container" markdown="1">
 
-## Code Examples
+## AI-Powered Workflow
 
-<div class="code-example" markdown="1">
+<div class="why-grid">
+  <div class="why-card">
+    <h3>MCP Server</h3>
+    <p>Run DMRG, TRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
+  </div>
+  <div class="why-card">
+    <h3>Claude Code Skills</h3>
+    <p>Built-in prompt templates for ground states, benchmarking, debugging, teaching, and migrating from other libraries.</p>
+  </div>
+</div>
 
-### DMRG Ground State
+<a class="cta" href="/mcp/">Learn more about MCP & AI workflow</a>
+
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
+## Code Example
 
 ```python
 from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
@@ -100,50 +117,20 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 print(f"Ground state energy: {result.energy:.8f}")
 ```
 
-</div>
-
-<div class="code-example" markdown="1">
-
-### TRG — 2D Ising Model
-
-```python
-from tenax import TRGConfig, trg, compute_ising_tensor, ising_free_energy_exact
-
-beta = 0.44  # near critical temperature
-tensor = compute_ising_tensor(beta)
-log_Z = trg(tensor, TRGConfig(max_bond_dim=16, num_steps=20))
-
-f_trg = float(-log_Z / beta)
-f_exact = ising_free_energy_exact(beta)
-print(f"TRG:   {f_trg:.8f}")
-print(f"Exact: {f_exact:.8f}")
-```
+<a class="cta" href="/examples/">See all examples</a>
 
 </div>
+</section>
 
-<div class="code-example" markdown="1">
+<section>
+<div class="container" markdown="1">
 
-### iPEPS AD Optimization
+## Coming From Another Library?
 
-```python
-import jax.numpy as jnp
-from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad, spin_half_ops
+Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration guides map concepts and code patterns so you can translate your existing work.
 
-ops = spin_half_ops()
-gate = (jnp.einsum("ij,kl->ikjl", ops["Sz"], ops["Sz"])
-        + 0.5 * (jnp.einsum("ij,kl->ikjl", ops["Sp"], ops["Sm"])
-                 + jnp.einsum("ij,kl->ikjl", ops["Sm"], ops["Sp"])))
+<a class="cta" href="/migration/">View migration guides</a>
 
-config = iPEPSConfig(
-    max_bond_dim=2,
-    ctm=CTMConfig(chi=16),
-    gs_num_steps=200,
-)
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
-print(f"Energy per site: {E_gs:.6f}")
-```
-
-</div>
 </div>
 </section>
 
@@ -182,12 +169,3 @@ cd tenax && uv sync --all-extras --dev</pre>
 
 </div>
 </section>
-
-<footer>
-  <div class="footer-links">
-    <a href="https://github.com/tenax-lab/tenax">GitHub</a>
-    <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
-    <a href="https://tenax-tn.readthedocs.io">Docs</a>
-  </div>
-  <p>MIT License</p>
-</footer>
