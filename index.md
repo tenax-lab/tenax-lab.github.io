@@ -8,7 +8,7 @@ layout: default
   <div class="install-cmd"><span class="prompt">$</span> pip install tenax-tn</div>
   <div class="hero-links">
     <a href="https://github.com/tenax-lab/tenax">GitHub</a>
-    <a href="https://tenax-tn.readthedocs.io">Docs</a>
+    <a href="https://tenax.readthedocs.io">Docs</a>
     <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
   </div>
 </div>
@@ -118,6 +118,33 @@ print(f"Ground state energy: {result.energy:.8f}")
 ```
 
 <a class="cta" href="/examples/">See all examples</a>
+
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
+## Why Tenax?
+
+<div class="why-grid">
+  <div class="why-card">
+    <h3>Fully differentiable</h3>
+    <p>Every algorithm works with JAX's <code>grad</code> and <code>jit</code>. AD-based iPEPS optimization uses implicit differentiation through the CTM fixed point for stable gradients.</p>
+  </div>
+  <div class="why-card">
+    <h3>Run anywhere</h3>
+    <p>Same code runs on CPU, NVIDIA GPU (CUDA 12/13), Google Cloud TPU, and Apple Silicon (Metal). No code changes — just install the right backend.</p>
+  </div>
+  <div class="why-card">
+    <h3>Benchmark suite</h3>
+    <p>CLI-driven performance benchmarks for every algorithm across all backends. Compare wall-clock timings with a single command and export to JSON or CSV.</p>
+  </div>
+  <div class="why-card">
+    <h3>From 1D to 2D</h3>
+    <p>Covers the full range: finite DMRG, iDMRG (chains and infinite cylinders), 2D cylinder DMRG, iPEPS ground states, and quasiparticle excitation spectra.</p>
+  </div>
+</div>
 
 </div>
 </section>
