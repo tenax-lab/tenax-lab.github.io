@@ -80,54 +80,18 @@ layout: default
 
 ## AI-Powered Workflow
 
-<div class="features">
-  <div class="feature highlight-feature">
+<div class="why-grid">
+  <div class="why-card">
     <h3>MCP Server</h3>
-    <p>Tenax ships an <a href="https://modelcontextprotocol.io">MCP</a> server that gives any AI assistant direct access to tensor network tools — build Hamiltonians, run DMRG and TRG, optimize contraction paths, validate networks, and generate code, all through natural language.</p>
+    <p>Run DMRG, TRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
   </div>
-  <div class="feature highlight-feature">
+  <div class="why-card">
     <h3>Claude Code Skills</h3>
-    <p>18+ specialized skills turn Claude Code into a tensor network tutor: DMRG workflows, iPEPS optimization, TRG analysis, symmetry systems, debugging, benchmarking, and migration guides from ITensor, TeNPy, Cytnx, and quimb.</p>
+    <p>Built-in prompt templates for ground states, benchmarking, debugging, teaching, and migrating from other libraries.</p>
   </div>
 </div>
 
-<div class="mcp-tools">
-  <h3>MCP Tools</h3>
-  <div class="tool-grid">
-    <div class="tool-card">
-      <code>run_dmrg</code>
-      <span>Ground-state search for 1D quantum Hamiltonians</span>
-    </div>
-    <div class="tool-card">
-      <code>run_trg</code>
-      <span>2D classical partition functions (Ising model)</span>
-    </div>
-    <div class="tool-card">
-      <code>build_hamiltonian</code>
-      <span>Build MPO from operator terms</span>
-    </div>
-    <div class="tool-card">
-      <code>optimize_contraction</code>
-      <span>Find optimal path and FLOP cost</span>
-    </div>
-    <div class="tool-card">
-      <code>validate_network</code>
-      <span>Check dimensions, charges, and flow consistency</span>
-    </div>
-    <div class="tool-card">
-      <code>generate_code</code>
-      <span>Turn descriptions into runnable Python</span>
-    </div>
-    <div class="tool-card">
-      <code>list_operators</code>
-      <span>Built-in spin-½ and spin-1 operators</span>
-    </div>
-    <div class="tool-card">
-      <code>export_netfile</code>
-      <span>Convert networks to .net format</span>
-    </div>
-  </div>
-</div>
+<a class="cta" href="/mcp/">Learn more about MCP & AI workflow</a>
 
 </div>
 </section>
@@ -135,11 +99,7 @@ layout: default
 <section>
 <div class="container" markdown="1">
 
-## Code Examples
-
-<div class="code-example" markdown="1">
-
-### DMRG Ground State
+## Code Example
 
 ```python
 from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
@@ -157,50 +117,8 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 print(f"Ground state energy: {result.energy:.8f}")
 ```
 
-</div>
+<a class="cta" href="/examples/">See all examples</a>
 
-<div class="code-example" markdown="1">
-
-### TRG — 2D Ising Model
-
-```python
-from tenax import TRGConfig, trg, compute_ising_tensor, ising_free_energy_exact
-
-beta = 0.44  # near critical temperature
-tensor = compute_ising_tensor(beta)
-log_Z = trg(tensor, TRGConfig(max_bond_dim=16, num_steps=20))
-
-f_trg = float(-log_Z / beta)
-f_exact = ising_free_energy_exact(beta)
-print(f"TRG:   {f_trg:.8f}")
-print(f"Exact: {f_exact:.8f}")
-```
-
-</div>
-
-<div class="code-example" markdown="1">
-
-### iPEPS AD Optimization
-
-```python
-import jax.numpy as jnp
-from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad, spin_half_ops
-
-ops = spin_half_ops()
-gate = (jnp.einsum("ij,kl->ikjl", ops["Sz"], ops["Sz"])
-        + 0.5 * (jnp.einsum("ij,kl->ikjl", ops["Sp"], ops["Sm"])
-                 + jnp.einsum("ij,kl->ikjl", ops["Sm"], ops["Sp"])))
-
-config = iPEPSConfig(
-    max_bond_dim=2,
-    ctm=CTMConfig(chi=16),
-    gs_num_steps=200,
-)
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
-print(f"Energy per site: {E_gs:.6f}")
-```
-
-</div>
 </div>
 </section>
 
@@ -236,26 +154,9 @@ print(f"Energy per site: {E_gs:.6f}")
 
 ## Coming From Another Library?
 
-Tenax provides migration guides with side-by-side concept mapping for:
+Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration guides map concepts and code patterns so you can translate your existing work.
 
-<div class="migration-grid">
-  <div class="migration-card">
-    <h3>ITensor</h3>
-    <p>Julia/C++ &rarr; Tenax. Maps Index, ITensor, MPS, AutoMPO to Tenax equivalents.</p>
-  </div>
-  <div class="migration-card">
-    <h3>TeNPy</h3>
-    <p>Maps Site, MPS, MPO, Model, and Engine classes to Tenax patterns.</p>
-  </div>
-  <div class="migration-card">
-    <h3>Cytnx</h3>
-    <p>UniTensor, Bond, Network &rarr; DenseTensor, SymmetricTensor, NetworkBlueprint.</p>
-  </div>
-  <div class="migration-card">
-    <h3>quimb</h3>
-    <p>Maps Tensor, TensorNetwork, DMRG, and TEBD to Tenax equivalents.</p>
-  </div>
-</div>
+<a class="cta" href="/migration/">View migration guides</a>
 
 </div>
 </section>
@@ -295,12 +196,3 @@ cd tenax && uv sync --all-extras --dev</pre>
 
 </div>
 </section>
-
-<footer>
-  <div class="footer-links">
-    <a href="https://github.com/tenax-lab/tenax">GitHub</a>
-    <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
-    <a href="https://tenax.readthedocs.io">Docs</a>
-  </div>
-  <p>MIT License</p>
-</footer>
