@@ -22,6 +22,9 @@ title: Code Examples
 - [TRG — 2D Ising Model](#trg--2d-ising-model)
 - [iPEPS Simple Update](#ipeps-simple-update)
 - [iPEPS AD Optimization & Excitations](#ipeps-ad-optimization--excitations)
+- [iPEPS with QR Projectors](#ipeps-with-qr-projectors)
+- [iPEPS 2-Site AD Optimization](#ipeps-2-site-ad-optimization)
+- [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
 - [Runnable Scripts](#runnable-scripts)
 {: style="list-style: none; padding: 0;" }
@@ -200,6 +203,109 @@ exc_config = ExcitationConfig(num_excitations=3)
 result = compute_excitations(A_opt, env, gate, E_gs, momenta, exc_config)
 print(result.energies.shape)  # (20, 3)
 ```
+
+---
+
+### iPEPS with QR Projectors
+
+QR-based projectors replace the expensive eigendecomposition in CTM with a QR factorization, giving significant speedups for large bond dimensions:
+
+```python
+import jax.numpy as jnp
+from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+
+Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
+Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
+Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
+gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
+     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
+             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(
+        chi=16,
+        max_iter=50,
+        projector_method="qr",   # QR instead of eigh
+        qr_warmup_steps=5,       # eigh warm-up before QR kicks in
+    ),
+    gs_num_steps=200,
+    gs_learning_rate=1e-3,
+    su_init=True,
+)
+A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+print(f"Ground-state energy: {E_gs:.6f}")
+```
+
+---
+
+### iPEPS 2-Site AD Optimization
+
+For antiferromagnets (Neel order), use a 2-site checkerboard unit cell with independent tensors A and B. The backward pass uses implicit differentiation through the 2-site CTM fixed point:
+
+```python
+import jax.numpy as jnp
+from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+
+Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
+Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
+Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
+gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
+     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
+             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(chi=16, max_iter=50),
+    gs_num_steps=200,
+    gs_learning_rate=1e-3,
+    unit_cell="2site",    # checkerboard A/B
+    su_init=True,         # simple update initialization
+    num_imaginary_steps=200,
+    dt=0.01,
+)
+(A_opt, B_opt), (env_A, env_B), E_gs = optimize_gs_ad(gate, None, config)
+print(f"Ground-state energy: {E_gs:.6f}")
+```
+
+---
+
+### Split-CTMRG
+
+Split-CTMRG (Rader & Lauchli, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from O(chi^3 D^6) to O(chi^3 D^3):
+
+```python
+import jax.numpy as jnp
+from tenax import (
+    iPEPSConfig, CTMConfig, optimize_gs_ad,
+    ctm_split, compute_energy_split_ctm,
+)
+
+Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
+Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
+Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
+gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
+     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
+             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+
+# First optimize with standard CTM
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(chi=16, max_iter=50),
+    gs_num_steps=200,
+    gs_learning_rate=1e-3,
+    su_init=True,
+)
+A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+
+# Evaluate with split-CTMRG
+split_config = CTMConfig(chi=16, max_iter=100, chi_I=10)
+split_env = ctm_split(A_opt, split_config)
+E = compute_energy_split_ctm(A_opt, split_env, gate, d=2)
+print(f"Split-CTM energy: {E:.6f}")
+```
+
+`chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting `chi_I = chi * D` makes the SVD split lossless; smaller values trade accuracy for speed.
 
 ---
 

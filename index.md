@@ -60,7 +60,7 @@ layout: default
   </div>
   <div class="algo-card">
     <h3>iPEPS</h3>
-    <p>2D ground states with simple update and AD optimization</p>
+    <p>2D ground states with simple update, AD optimization, QR projectors, 2-site unit cells, and split-CTMRG</p>
   </div>
   <div class="algo-card">
     <h3>Excitations</h3>

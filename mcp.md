@@ -68,7 +68,7 @@ Tenax exposes 8 tools through the MCP server. Claude Code can call any of them d
   </div>
   <div class="tool-card">
     <h3>generate_code</h3>
-    <p>Generate complete, runnable Tenax Python code from a high-level description. Supports DMRG, TRG, iDMRG, and iPEPS algorithms. Returns a ready-to-run Python script.</p>
+    <p>Generate complete, runnable Tenax Python code from a high-level description. Supports DMRG, TRG, iDMRG, iPEPS (1-site and 2-site unit cells), QR projectors, and split-CTMRG. Returns a ready-to-run Python script.</p>
   </div>
   <div class="tool-card">
     <h3>list_operators</h3>
