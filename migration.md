@@ -249,7 +249,6 @@ result = bp.launch()
 
 - C++ performance for small tensors — JAX has JIT overhead
 - Row/column rank semantics
-- Non-Abelian symmetry — Tenax supports Abelian only (U(1), Z_n)
 - Richer linear algebra (`Eig`, `Inv`, `Det` on UniTensor)
 
 </div>
