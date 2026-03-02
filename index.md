@@ -8,7 +8,7 @@ layout: default
   <div class="install-cmd"><span class="prompt">$</span> pip install tenax-tn</div>
   <div class="hero-links">
     <a href="https://github.com/tenax-lab/tenax">GitHub</a>
-    <a href="https://tenax-tn.readthedocs.io">Docs</a>
+    <a href="https://tenax.readthedocs.io">Docs</a>
     <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
   </div>
 </div>
@@ -187,7 +187,7 @@ cd tenax && uv sync --all-extras --dev</pre>
   <div class="footer-links">
     <a href="https://github.com/tenax-lab/tenax">GitHub</a>
     <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
-    <a href="https://tenax-tn.readthedocs.io">Docs</a>
+    <a href="https://tenax.readthedocs.io">Docs</a>
   </div>
   <p>MIT License</p>
 </footer>
