@@ -78,6 +78,63 @@ layout: default
 <section>
 <div class="container" markdown="1">
 
+## AI-Powered Workflow
+
+<div class="features">
+  <div class="feature highlight-feature">
+    <h3>MCP Server</h3>
+    <p>Tenax ships an <a href="https://modelcontextprotocol.io">MCP</a> server that gives any AI assistant direct access to tensor network tools — build Hamiltonians, run DMRG and TRG, optimize contraction paths, validate networks, and generate code, all through natural language.</p>
+  </div>
+  <div class="feature highlight-feature">
+    <h3>Claude Code Skills</h3>
+    <p>18+ specialized skills turn Claude Code into a tensor network tutor: DMRG workflows, iPEPS optimization, TRG analysis, symmetry systems, debugging, benchmarking, and migration guides from ITensor, TeNPy, Cytnx, and quimb.</p>
+  </div>
+</div>
+
+<div class="mcp-tools">
+  <h3>MCP Tools</h3>
+  <div class="tool-grid">
+    <div class="tool-card">
+      <code>run_dmrg</code>
+      <span>Ground-state search for 1D quantum Hamiltonians</span>
+    </div>
+    <div class="tool-card">
+      <code>run_trg</code>
+      <span>2D classical partition functions (Ising model)</span>
+    </div>
+    <div class="tool-card">
+      <code>build_hamiltonian</code>
+      <span>Build MPO from operator terms</span>
+    </div>
+    <div class="tool-card">
+      <code>optimize_contraction</code>
+      <span>Find optimal path and FLOP cost</span>
+    </div>
+    <div class="tool-card">
+      <code>validate_network</code>
+      <span>Check dimensions, charges, and flow consistency</span>
+    </div>
+    <div class="tool-card">
+      <code>generate_code</code>
+      <span>Turn descriptions into runnable Python</span>
+    </div>
+    <div class="tool-card">
+      <code>list_operators</code>
+      <span>Built-in spin-½ and spin-1 operators</span>
+    </div>
+    <div class="tool-card">
+      <code>export_netfile</code>
+      <span>Convert networks to .net format</span>
+    </div>
+  </div>
+</div>
+
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
 ## Code Examples
 
 <div class="code-example" markdown="1">
@@ -144,6 +201,62 @@ print(f"Energy per site: {E_gs:.6f}")
 ```
 
 </div>
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
+## Why Tenax?
+
+<div class="why-grid">
+  <div class="why-card">
+    <h3>Fully differentiable</h3>
+    <p>Every algorithm works with JAX's <code>grad</code> and <code>jit</code>. AD-based iPEPS optimization uses implicit differentiation through the CTM fixed point for stable gradients.</p>
+  </div>
+  <div class="why-card">
+    <h3>Run anywhere</h3>
+    <p>Same code runs on CPU, NVIDIA GPU (CUDA 12/13), Google Cloud TPU, and Apple Silicon (Metal). No code changes — just install the right backend.</p>
+  </div>
+  <div class="why-card">
+    <h3>Benchmark suite</h3>
+    <p>CLI-driven performance benchmarks for every algorithm across all backends. Compare wall-clock timings with a single command and export to JSON or CSV.</p>
+  </div>
+  <div class="why-card">
+    <h3>From 1D to 2D</h3>
+    <p>Covers the full range: finite DMRG, iDMRG (chains and infinite cylinders), 2D cylinder DMRG, iPEPS ground states, and quasiparticle excitation spectra.</p>
+  </div>
+</div>
+
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
+## Coming From Another Library?
+
+Tenax provides migration guides with side-by-side concept mapping for:
+
+<div class="migration-grid">
+  <div class="migration-card">
+    <h3>ITensor</h3>
+    <p>Julia/C++ &rarr; Tenax. Maps Index, ITensor, MPS, AutoMPO to Tenax equivalents.</p>
+  </div>
+  <div class="migration-card">
+    <h3>TeNPy</h3>
+    <p>Maps Site, MPS, MPO, Model, and Engine classes to Tenax patterns.</p>
+  </div>
+  <div class="migration-card">
+    <h3>Cytnx</h3>
+    <p>UniTensor, Bond, Network &rarr; DenseTensor, SymmetricTensor, NetworkBlueprint.</p>
+  </div>
+  <div class="migration-card">
+    <h3>quimb</h3>
+    <p>Maps Tensor, TensorNetwork, DMRG, and TEBD to Tenax equivalents.</p>
+  </div>
+</div>
+
 </div>
 </section>
 
