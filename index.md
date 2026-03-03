@@ -13,6 +13,12 @@ layout: default
   </div>
 </div>
 
+<div class="experimental-banner">
+  <div class="container">
+    <strong>Experimental project</strong> — This library is under active development and largely written with the assistance of Claude Code (AI). While we test extensively, AI-generated code can contain subtle bugs. Please verify results against known benchmarks before using them in research.
+  </div>
+</div>
+
 <section>
 <div class="container" markdown="1">
 
