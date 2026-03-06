@@ -43,7 +43,7 @@ Add the Tenax MCP server to your Claude Code configuration (`~/.claude/settings.
 
 ## MCP Tools
 
-Tenax exposes 8 tools through the MCP server. Claude Code can call any of them directly during a conversation.
+Tenax exposes 9 tools through the MCP server. Claude Code can call any of them directly during a conversation.
 
 <div class="skills-grid">
   <div class="tool-card">
@@ -53,6 +53,10 @@ Tenax exposes 8 tools through the MCP server. Claude Code can call any of them d
   <div class="tool-card">
     <h3>run_trg</h3>
     <p>Run the Tensor Renormalization Group on a 2D classical model. Currently supports the 2D Ising model. Provide inverse temperature or temperature, coupling constant, and TRG bond dimension. Returns free energy per site, exact solution, and relative error.</p>
+  </div>
+  <div class="tool-card">
+    <h3>run_hotrg</h3>
+    <p>Run Higher-Order TRG on a 2D classical model. Uses higher-order SVD for more accurate coarse-graining than standard TRG. Supports configurable direction order (alternating, horizontal, vertical). Returns free energy per site, exact solution, and relative error.</p>
   </div>
   <div class="tool-card">
     <h3>build_hamiltonian</h3>
@@ -68,7 +72,7 @@ Tenax exposes 8 tools through the MCP server. Claude Code can call any of them d
   </div>
   <div class="tool-card">
     <h3>generate_code</h3>
-    <p>Generate complete, runnable Tenax Python code from a high-level description. Supports DMRG, TRG, iDMRG, and iPEPS algorithms. Returns a ready-to-run Python script.</p>
+    <p>Generate complete, runnable Tenax Python code from a high-level description. Supports DMRG, TRG, HOTRG, iDMRG, iPEPS (1-site, 2-site, split-CTM), fermionic iPEPS, standard CTM with Tensor protocol, and quasiparticle excitations. Returns a ready-to-run Python script.</p>
   </div>
   <div class="tool-card">
     <h3>list_operators</h3>

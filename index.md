@@ -69,6 +69,10 @@ layout: default
     <p>2D ground states with simple update and AD optimization</p>
   </div>
   <div class="algo-card">
+    <h3>Fermionic iPEPS</h3>
+    <p>Simple-update fPEPS for spinless fermions with FermionParity symmetry</p>
+  </div>
+  <div class="algo-card">
     <h3>Excitations</h3>
     <p>Quasiparticle spectra via iPEPS at arbitrary momenta</p>
   </div>
@@ -89,7 +93,7 @@ layout: default
 <div class="why-grid">
   <div class="why-card">
     <h3>MCP Server</h3>
-    <p>Run DMRG, TRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
+    <p>Run DMRG, TRG, HOTRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
   </div>
   <div class="why-card">
     <h3>Claude Code Skills</h3>
