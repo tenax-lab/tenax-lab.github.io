@@ -13,6 +13,12 @@ layout: default
   </div>
 </div>
 
+<div class="experimental-banner">
+  <div class="container">
+    <strong>Experimental project</strong> — This library is under active development and largely written with the assistance of Claude Code (AI). While we test extensively, AI-generated code can contain subtle bugs. Please verify results against known benchmarks before using them in research.
+  </div>
+</div>
+
 <section>
 <div class="container" markdown="1">
 
@@ -63,6 +69,10 @@ layout: default
     <p>2D ground states with simple update, AD optimization, QR projectors, 2-site unit cells, and split-CTMRG</p>
   </div>
   <div class="algo-card">
+    <h3>Fermionic iPEPS</h3>
+    <p>Simple-update fPEPS for spinless fermions with FermionParity symmetry</p>
+  </div>
+  <div class="algo-card">
     <h3>Excitations</h3>
     <p>Quasiparticle spectra via iPEPS at arbitrary momenta</p>
   </div>
@@ -83,7 +93,7 @@ layout: default
 <div class="why-grid">
   <div class="why-card">
     <h3>MCP Server</h3>
-    <p>Run DMRG, TRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
+    <p>Run DMRG, TRG, HOTRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
   </div>
   <div class="why-card">
     <h3>Claude Code Skills</h3>
