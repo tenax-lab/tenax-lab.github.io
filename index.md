@@ -5,11 +5,10 @@ layout: default
 <div class="hero">
   <h1>Tenax</h1>
   <p class="tagline">JAX-based tensor network library with symmetry-aware block-sparse tensors and label-based contraction</p>
-  <div class="install-cmd"><span class="prompt">$</span> pip install tenax-tn</div>
+  <div class="install-cmd"><span class="prompt">$</span> pip install -e .</div>
   <div class="hero-links">
     <a href="https://github.com/tenax-lab/tenax">GitHub</a>
     <a href="https://tenax.readthedocs.io">Docs</a>
-    <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
   </div>
 </div>
 
@@ -176,31 +175,36 @@ Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration gui
 
 ## Installation
 
+> **PyPI package coming soon.** Install from source for now.
+
 <div class="install-grid">
   <div class="install-option">
-    <h3>CPU</h3>
-    <pre>pip install tenax-tn</pre>
+    <h3>With uv (recommended)</h3>
+    <pre>git clone https://github.com/tenax-lab/tenax.git
+cd tenax
+uv sync --all-extras --dev</pre>
+  </div>
+  <div class="install-option">
+    <h3>With pip</h3>
+    <pre>git clone https://github.com/tenax-lab/tenax.git
+cd tenax
+pip install -e .</pre>
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 13)</h3>
-    <pre>pip install tenax-tn[cuda13]</pre>
+    <pre>pip install -U "jax[cuda13]"</pre>
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 12)</h3>
-    <pre>pip install tenax-tn[cuda12]</pre>
+    <pre>pip install -U "jax[cuda12]"</pre>
   </div>
   <div class="install-option">
     <h3>Google Cloud TPU</h3>
-    <pre>pip install tenax-tn[tpu]</pre>
+    <pre>pip install -U "jax[tpu]"</pre>
   </div>
   <div class="install-option">
     <h3>Apple Silicon GPU</h3>
-    <pre>pip install tenax-tn[metal]</pre>
-  </div>
-  <div class="install-option">
-    <h3>Development</h3>
-    <pre>git clone https://github.com/tenax-lab/tenax.git
-cd tenax && uv sync --all-extras --dev</pre>
+    <pre>pip install jax-metal</pre>
   </div>
 </div>
 
