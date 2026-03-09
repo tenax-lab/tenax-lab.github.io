@@ -345,31 +345,30 @@ mpo_sym = auto.to_mpo(symmetric=True)
 
 ### Tensor Display & Mermaid Export
 
-Tensors print as ASCII box diagrams showing legs, dimensions, and (for symmetric tensors) charge sectors and block statistics:
+Tensors print as ASCII box diagrams with IN legs on the left and OUT legs on the right:
 
 ```python
-from tenax import DenseTensor, TensorNetwork
-import jax.numpy as jnp
-
-# Dense tensor display
-data = jnp.ones((2, 3))
-tensor = DenseTensor(data, (phys_idx, bond_idx))
+# DenseTensor with 2 IN legs + 1 OUT leg
 print(tensor)
-#           ┌──────────┐
-# phys (2) ──>┤ Dense    │
-#           │ float64  ├<── bond (3)
-#           └──────────┘
+#             ┌─────────┐
+# phys (2) ──>┤ Dense   ├<── right (3)
+# left (4) ──>┤ float64 │
+#             └─────────┘
 
-# Symmetric tensor display shows symmetry, blocks, and charge degeneracy
+# SymmetricTensor with 2 IN legs + 2 OUT legs
 print(sym_tensor)
-#            ┌───────────────┐
-# left (3) ──>┤ Symmetric     ├<── right (3)
-#            │ U(1) 3 blk    │
-#            │ float64       │
-#            └───────────────┘
-#  charges: left{-1:1, 0:1, 1:1} right{-1:1, 0:1, 1:1}
+#             ┌──────────────┐
+# left (3) ──>┤ Symmetric    ├<── right (3)
+# phys (2) ──>┤ U(1) float64 ├<── top (4)
+#             │ 14blk nnz=14 │
+#             └──────────────┘
+#  charges: left{-1:1, 0:1, 1:1} phys{-1:1, 1:1}
+#           right{-1:1, 0:1, 1:1} top{-1:1, 0:1, 1:1, 2:1}
+```
 
-# Export TensorNetwork as Mermaid diagram
+Export a `TensorNetwork` as a [Mermaid](https://mermaid.js.org/) diagram:
+
+```python
 tn = TensorNetwork(name="MPS")
 tn.add_node("A", tensor_A)
 tn.add_node("B", tensor_B)
