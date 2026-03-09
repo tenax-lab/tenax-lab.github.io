@@ -40,6 +40,10 @@ layout: default
     <h3>Pure JAX</h3>
     <p><code>jit</code>, <code>grad</code>, <code>vmap</code> work out of the box. GPU, TPU, and Metal acceleration.</p>
   </div>
+  <div class="feature">
+    <h3>AI integration</h3>
+    <p>MCP server for running calculations from Claude. Built-in skills for ground states, debugging, benchmarking, and migration from ITensor, TeNPy, Cytnx, and quimb.</p>
+  </div>
 </div>
 
 </div>
