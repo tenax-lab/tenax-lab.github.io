@@ -228,31 +228,40 @@ p code {
 
 .install-option .copy-btn {
   position: absolute;
-  top: 2.2rem;
+  bottom: 0.5rem;
   right: 0.5rem;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
   color: var(--text-muted);
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 6px;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.install-option:hover .copy-btn {
-  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
 }
 
 .install-option .copy-btn:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.18);
   color: var(--text-light);
 }
 
 .install-option .copy-btn.copied {
   color: #4ade80;
-  border-color: #4ade80;
+  border-color: rgba(74,222,128,0.4);
+}
+
+.install-option .copy-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Footer */
