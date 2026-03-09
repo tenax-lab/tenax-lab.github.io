@@ -6,3 +6,23 @@
   </div>
   <p>MIT License</p>
 </footer>
+<script>
+document.querySelectorAll('.install-option').forEach(function(el) {
+  var pre = el.querySelector('pre');
+  if (!pre) return;
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', function() {
+    navigator.clipboard.writeText(pre.textContent).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  });
+  el.appendChild(btn);
+});
+</script>
