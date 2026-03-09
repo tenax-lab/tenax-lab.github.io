@@ -356,14 +356,14 @@ data = jnp.ones((2, 3))
 tensor = DenseTensor(data, (phys_idx, bond_idx))
 print(tensor)
 #           ┌──────────┐
-# phys (2) ──▶┤ Dense    │
-#           │ float64  ├◀── bond (3)
+# phys (2) ──>┤ Dense    │
+#           │ float64  ├<── bond (3)
 #           └──────────┘
 
 # Symmetric tensor display shows symmetry, blocks, and charge degeneracy
 print(sym_tensor)
 #            ┌───────────────┐
-# left (3) ──▶┤ Symmetric     ├◀── right (3)
+# left (3) ──>┤ Symmetric     ├<── right (3)
 #            │ U(1) 3 blk    │
 #            │ float64       │
 #            └───────────────┘
