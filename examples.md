@@ -26,6 +26,7 @@ title: Code Examples
 - [iPEPS 2-Site AD Optimization](#ipeps-2-site-ad-optimization)
 - [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
+- [Tensor Display & Mermaid Export](#tensor-display--mermaid-export)
 - [Runnable Scripts](#runnable-scripts)
 {: style="list-style: none; padding: 0;" }
 
@@ -339,6 +340,50 @@ mpo = build_auto_mpo(terms, L=L, site_ops=custom_ops)
 # Build a symmetric (U(1) block-sparse) MPO
 mpo_sym = auto.to_mpo(symmetric=True)
 ```
+
+---
+
+### Tensor Display & Mermaid Export
+
+Tensors print as ASCII box diagrams showing legs, dimensions, and (for symmetric tensors) charge sectors and block statistics:
+
+```python
+from tenax import DenseTensor, TensorNetwork
+import jax.numpy as jnp
+
+# Dense tensor display
+data = jnp.ones((2, 3))
+tensor = DenseTensor(data, (phys_idx, bond_idx))
+print(tensor)
+#           ┌──────────┐
+# phys (2) ──▶┤ Dense    │
+#           │ float64  ├◀── bond (3)
+#           └──────────┘
+
+# Symmetric tensor display shows symmetry, blocks, and charge degeneracy
+print(sym_tensor)
+#            ┌───────────────┐
+# left (3) ──▶┤ Symmetric     ├◀── right (3)
+#            │ U(1) 3 blk    │
+#            │ float64       │
+#            └───────────────┘
+#  charges: left{-1:1, 0:1, 1:1} right{-1:1, 0:1, 1:1}
+
+# Export TensorNetwork as Mermaid diagram
+tn = TensorNetwork(name="MPS")
+tn.add_node("A", tensor_A)
+tn.add_node("B", tensor_B)
+tn.connect("A", "bond", "B", "bond")
+print(tn.to_mermaid())
+# graph LR
+#   A["A (2,3)"]
+#   B["B (3,4)"]
+#   A ---|bond| B
+#   A -.- A_phys(("phys"))
+#   B -.- B_phys(("phys"))
+```
+
+Paste the Mermaid output into GitHub markdown, Mermaid Live Editor, or VS Code to render interactive diagrams.
 
 ---
 
