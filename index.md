@@ -167,7 +167,7 @@ print(f"Ground state energy: {result.energy:.8f}")
 
 ## Coming From Another Library?
 
-Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration guides map concepts and code patterns so you can translate your existing work.
+Tenax shares core ideas with ITensor, TeNPy, Cytnx, quimb, and TensorKit.jl. Our migration guides map concepts and code patterns so you can translate your existing work.
 
 <a class="cta" href="/migration/">View migration guides</a>
 

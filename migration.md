@@ -13,6 +13,8 @@ title: Migration Guides
 
 Tenax shares core ideas with other tensor network libraries — label-based contraction, symmetry-aware tensors, DMRG. These guides map concepts and code patterns from each library to their Tenax equivalents.
 
+**Note:** These migration tables were generated with AI assistance from web sources and may contain inaccuracies regarding other libraries' APIs. If you spot an error, please [open an issue](https://github.com/tenax-lab/tenax/issues).
+
 <div class="toc" markdown="1">
 
 **Libraries**
@@ -21,6 +23,7 @@ Tenax shares core ideas with other tensor network libraries — label-based cont
 - [TeNPy](#tenpy)
 - [Cytnx](#cytnx)
 - [quimb](#quimb)
+- [TensorKit.jl](#tensorkitjl)
 {: style="list-style: none; padding: 0;" }
 
 </div>
@@ -328,6 +331,91 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 - Visualization — `tn.draw()` for tensor network diagrams
 - Backend flexibility — Tenax is JAX-only
 - TEBD / TDVP
+
+</div>
+</section>
+
+<section id="tensorkitjl">
+<div class="container" markdown="1">
+
+## TensorKit.jl
+
+TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fermionic statistics. TensorKit uses a category-theoretic framework (fusion trees, R-symbols, ribbon twists) that generalises to non-Abelian and anyonic symmetries. Tenax takes a more direct approach with explicit Koszul signs and a JAX backend for autodiff and GPU acceleration.
+
+### Concept Mapping
+
+| TensorKit.jl (Julia) | Tenax (Python) | Notes |
+|----------------------|----------------|-------|
+| `TensorMap{S}(data, cod ← dom)` | `SymmetricTensor(blocks, indices)` | No codomain/domain partition in Tenax |
+| `GradedSpace[Irrep](d₀ => n₀, ...)` | `TensorIndex(sym, charges, flow, label)` | Tenax carries label on the index |
+| `FermionParity` (sector, `isodd::Bool`) | `FermionParity` (symmetry, charges 0/1) | Equivalent Z₂ grading |
+| `FermionNumber` = `U1Irrep ⊠ FermionParity` | `FermionicU1(grading=...)` | TensorKit uses Deligne product `⊠`; Tenax uses single class with configurable grading |
+| `FermionSpin` = `SU2Irrep ⊠ FermionParity` | — | No non-Abelian symmetry in Tenax |
+| `A ⊠ B` (Deligne product of sectors) | `ProductSymmetry(sym1, sym2)` | TensorKit supports arbitrary products; Tenax limited to 2 factors |
+| `BraidingStyle: Bosonic(), Fermionic()` | `BraidingStyle: BOSONIC, FERMIONIC` | Same concept, type hierarchy vs enum |
+| `Rsymbol(a, b, c)` | `sym.exchange_sign(q_a, q_b)` | R-symbol vs explicit sign function |
+| `twist(a)` | `sym.twist_phase(q)` | Both return (−1)^p for odd sectors |
+| `braid(t, perm, levels)` | `t.transpose(labels)` | TensorKit distinguishes over/under crossings; Tenax uses symmetric braiding only |
+| `permute(t, (i...,), (j...,))` | `t.transpose(labels)` | TensorKit repartitions codomain/domain; Tenax has no partition |
+| `@tensor C[...] := A[...] * B[...]` | `contract(A, B)` | TensorKit's fermionic `@tensor` is still TODO; Tenax handles fermionic signs automatically |
+| `tsvd(t)` | `truncated_svd(t, left_labels, right_labels)` | Both handle fermionic signs in factorisation |
+| — | `AutoMPO`, `dmrg`, `idmrg`, `trg`, `ipeps` | Algorithms live in MPSKit.jl for TensorKit |
+
+### Key Differences
+
+- **Category theory vs explicit signs** — TensorKit encodes fermionic statistics via abstract R-symbols, fusion trees, and ribbon twists. Tenax applies Koszul signs directly in each operation (`contract`, `transpose`, `truncated_svd`, `dagger`). The categorical approach extends to anyons; the explicit approach is simpler to audit and debug.
+- **Non-Abelian + fermionic** — TensorKit supports `FermionSpin` = `SU2Irrep ⊠ FermionParity` and arbitrary non-Abelian groups. Tenax currently supports only Abelian symmetries (U(1), Z_n) and their fermionic variants.
+- **Fermionic contraction** — Tenax's `contract()` handles fermionic signs automatically and is fully tested. TensorKit's `@tensor` macro for fermionic contraction is [documented as TODO](https://quantumkithub.github.io/TensorKit.jl/stable/man/tensormanipulations/), requiring manual `braid()` calls for fermionic networks.
+- **Codomain/domain partition** — TensorKit tensors are morphisms V₁ ⊗ ... ⊗ Vₙ → W₁ ⊗ ... ⊗ Wₘ with a fixed codomain/domain split. Tenax tensors have no partition — SVD and QR take explicit `left_labels` / `right_labels`.
+- **AD and JIT** — Tenax's JAX backend provides automatic differentiation through all tensor operations (needed for AD-based iPEPS) and JIT compilation for GPU/TPU. TensorKit has experimental AD via ChainRules.jl, but [AD through twist operations is an open issue](https://github.com/QuantumKitHub/TensorKit.jl/issues/216).
+- **Jordan-Wigner** — Tenax's `AutoMPO` automatically inserts Jordan-Wigner strings for fermionic 1D Hamiltonians. TensorKit is a tensor library; JW handling lives in downstream packages like MPSKit.jl.
+- **`braid()` vs `transpose()`** — TensorKit distinguishes `braid()` (general, with `levels` for over/under crossings) from `permute()` (symmetric braiding only). Tenax has only `transpose()`, which suffices for Abelian fermionic systems but cannot handle anyonic braiding.
+
+### Side-by-Side: Symmetric Tensor Creation
+
+**TensorKit.jl (Julia):**
+
+```julia
+using TensorKit
+
+V = GradedSpace[FermionParity](0 => 2, 1 => 3)
+W = GradedSpace[FermionParity](0 => 1, 1 => 2)
+t = TensorMap(randn, V ⊗ V ← W)
+```
+
+**Tenax (Python):**
+
+```python
+from tenax import FermionParity, TensorIndex, FlowDirection, SymmetricTensor
+import numpy as np, jax
+
+sym = FermionParity()
+T = SymmetricTensor.random_normal(
+    indices=(
+        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v1"),
+        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v2"),
+        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.OUT, label="w"),
+    ),
+    key=jax.random.PRNGKey(0),
+)
+```
+
+### What You Gain
+
+- Python ecosystem (NumPy, SciPy, matplotlib, Jupyter)
+- Autodiff — `jax.grad` through fermionic tensor contractions
+- GPU/TPU/Metal — same code on all backends
+- Automatic fermionic contraction signs — no manual `braid()` calls
+- Built-in algorithms — DMRG, iDMRG, TRG, HOTRG, iPEPS, excitations
+- AutoMPO with automatic Jordan-Wigner string insertion
+
+### What You Lose
+
+- Non-Abelian symmetry — SU(2), SU(N) not yet supported
+- Anyonic braiding — only symmetric (Abelian fermionic) braiding
+- Fusion tree framework — needed for efficient non-Abelian block-sparse storage
+- Julia performance — no JIT overhead for small tensors
+- Mature ecosystem — MPSKit.jl, PEPSKit.jl, etc. build on TensorKit
 
 </div>
 </section>
