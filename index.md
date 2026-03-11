@@ -186,19 +186,19 @@ Tenax shares core ideas with ITensor, TeNPy, Cytnx, quimb, and TensorKit.jl. Our
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 13)</h3>
-    <pre>pip install tenax-tn[cuda13]</pre>
+    <pre>pip install "tenax-tn[cuda13]"</pre>
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 12)</h3>
-    <pre>pip install tenax-tn[cuda12]</pre>
+    <pre>pip install "tenax-tn[cuda12]"</pre>
   </div>
   <div class="install-option">
     <h3>Google Cloud TPU</h3>
-    <pre>pip install tenax-tn[tpu]</pre>
+    <pre>pip install "tenax-tn[tpu]"</pre>
   </div>
   <div class="install-option">
     <h3>Apple Silicon GPU</h3>
-    <pre>pip install tenax-tn[metal]</pre>
+    <pre>pip install "tenax-tn[metal]"</pre>
   </div>
   <div class="install-option">
     <h3>From source</h3>
