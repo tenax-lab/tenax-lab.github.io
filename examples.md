@@ -106,7 +106,7 @@ print(f"Converged: {result.converged}")
 
 ### Infinite Cylinder iDMRG
 
-Heisenberg model on an infinite cylinder with circumference Ly:
+Heisenberg model on an infinite cylinder with circumference $L_y$:
 
 ```python
 from tenax import build_bulk_mpo_heisenberg_cylinder, iDMRGConfig, idmrg
@@ -273,7 +273,7 @@ print(f"Ground-state energy: {E_gs:.6f}")
 
 ### Split-CTMRG
 
-Split-CTMRG (Rader & Lauchli, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from O(chi^3 D^6) to O(chi^3 D^3):
+Split-CTMRG (Naumann, Weerda, Eisert, Rizzi & Schmoll, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from $O(\chi^3 D^6)$ to $O(\chi^3 D^3)$:
 
 ```python
 import jax.numpy as jnp
@@ -306,7 +306,7 @@ E = compute_energy_split_ctm(A_opt, split_env, gate, d=2)
 print(f"Split-CTM energy: {E:.6f}")
 ```
 
-`chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting `chi_I = chi * D` makes the SVD split lossless; smaller values trade accuracy for speed.
+`chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting $\chi_I = \chi \cdot D$ makes the SVD split lossless; smaller values trade accuracy for speed.
 
 ---
 
@@ -393,7 +393,7 @@ Complete example scripts are in the [`examples/`](https://github.com/tenax-lab/t
 | Script | Algorithm | Model |
 |--------|-----------|-------|
 | `heisenberg_cylinder.py` | DMRG | Heisenberg on 4x2, 6x3, 8x4 cylinders |
-| `heisenberg_infinite_cylinder.py` | iDMRG | Heisenberg on infinite Ly=2, Ly=4 cylinders |
+| `heisenberg_infinite_cylinder.py` | iDMRG | Heisenberg on infinite $L_y=2$, $L_y=4$ cylinders |
 | `heisenberg_ipeps_su.py` | iPEPS simple update | Heisenberg (1x1 and 2-site unit cells) |
 | `heisenberg_ipeps_ad.py` | iPEPS AD optimization | Heisenberg (random vs SU init) |
 | `heisenberg_ipeps_excitations.py` | iPEPS excitations | Heisenberg dispersion along Gamma-X-M-Gamma |
