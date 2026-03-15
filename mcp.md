@@ -5,7 +5,7 @@ title: MCP & AI Workflow
 
 <div class="page-header">
   <h1>MCP & AI Workflow</h1>
-  <p>Run tensor network calculations directly from Claude Code using the Model Context Protocol</p>
+  <p>Run tensor network calculations directly from Claude Code using MCP tools and the Tenax Toolkit plugin</p>
 </div>
 
 <section>
@@ -90,67 +90,90 @@ Tenax exposes 9 tools through the MCP server. Claude Code can call any of them d
 <section>
 <div class="container" markdown="1">
 
-## Claude Code Skills
+## Tenax Toolkit (Claude Code Plugin)
 
-Beyond MCP tools, Tenax ships [Claude Code skills](https://github.com/tenax-lab/tenax/tree/main/.claude/skills) — prompt templates that teach Claude domain-specific workflows.
+The [Tenax Toolkit](https://github.com/tenax-lab/tenax-toolkit) is a Claude Code plugin that gives Claude 17 domain-specific skills for tensor network simulations. Install it once and Claude automatically knows how to guide you through DMRG, iPEPS, TRG, symmetry-aware tensors, and more.
 
-### Workflows
+### Install
+
+In Claude Code, run:
+
+```
+/install-plugin tenax-lab/tenax-toolkit
+```
+
+That's it — all 17 skills are immediately available. Claude will automatically invoke them when your questions match (e.g., asking about DMRG triggers `tenax-dmrg-workflow`, asking about symmetries triggers `tenax-symmetry`).
+
+### Skills
+
+#### Algorithm Workflows
 
 <div class="skills-grid">
   <div class="skill-card">
-    <h4>tenax-workflow-ground-state</h4>
-    <p>End-to-end ground state calculation: choose algorithm, build Hamiltonian, run DMRG/iDMRG/iPEPS, analyze results.</p>
+    <h4>tenax-dmrg-workflow</h4>
+    <p>Complete DMRG ground-state calculation: finite DMRG, iDMRG, and 2D cylinder DMRG with AutoMPO Hamiltonians.</p>
   </div>
   <div class="skill-card">
-    <h4>tenax-workflow-classical-stat-mech</h4>
-    <p>Classical statistical mechanics: build tensor from partition function, run TRG/HOTRG, compare to exact solutions.</p>
+    <h4>tenax-ipeps-workflow</h4>
+    <p>iPEPS pipeline: simple update, AD-based optimization with CTM environments, and quasiparticle excitation spectra.</p>
+  </div>
+  <div class="skill-card">
+    <h4>tenax-trg-workflow</h4>
+    <p>TRG and HOTRG for 2D classical stat mech: partition functions, free energy, and phase transitions.</p>
   </div>
 </div>
 
-### Building Blocks
+#### Building Blocks
 
 <div class="skills-grid">
   <div class="skill-card">
-    <h4>tenax-symmetric-tensor</h4>
-    <p>Create and manipulate symmetry-aware block-sparse tensors with U(1) and Z_n symmetries.</p>
+    <h4>tenax-tensor-ops</h4>
+    <p>Core tensor operations: DenseTensor, SymmetricTensor, label-based contraction, SVD, QR, and eigendecomposition.</p>
   </div>
   <div class="skill-card">
-    <h4>tenax-contraction</h4>
-    <p>Label-based contraction, SVD, QR decomposition, and NetworkBlueprint usage.</p>
+    <h4>tenax-symmetry</h4>
+    <p>Symmetry system: U(1) and Z_n, TensorIndex with charges and FlowDirection, block-sparse operations.</p>
   </div>
   <div class="skill-card">
-    <h4>tenax-auto-mpo</h4>
-    <p>Build Hamiltonian MPOs from symbolic operator descriptions using AutoMPO.</p>
+    <h4>tenax-autompo</h4>
+    <p>Build Hamiltonian MPOs from natural-language model descriptions using AutoMPO.</p>
+  </div>
+  <div class="skill-card">
+    <h4>tenax-blueprint</h4>
+    <p>Design tensor network contractions using NetworkBlueprint and .net topology files.</p>
   </div>
   <div class="skill-card">
     <h4>tenax-observables</h4>
-    <p>Compute expectation values, correlation functions, and entanglement entropy from MPS.</p>
+    <p>Compute expectation values, correlation functions, entanglement entropy, and order parameters.</p>
   </div>
 </div>
 
-### Validation & Testing
+#### Validation, Benchmarking & Teaching
 
 <div class="skills-grid">
   <div class="skill-card">
-    <h4>tenax-validate</h4>
-    <p>Diagnose tensor shape mismatches, charge violations, contraction errors, and numerical issues.</p>
+    <h4>tenax-debugger</h4>
+    <p>Diagnose shape mismatches, JAX tracing issues, gradient problems, and convergence failures.</p>
   </div>
   <div class="skill-card">
     <h4>tenax-benchmark</h4>
     <p>Design and run performance benchmarks across CPU, CUDA, TPU, and Metal backends.</p>
   </div>
-</div>
-
-### Teaching
-
-<div class="skills-grid">
   <div class="skill-card">
-    <h4>tenax-teach</h4>
-    <p>Explain tensor network concepts at the student's level with Tenax code examples.</p>
+    <h4>tenax-ed-comparator</h4>
+    <p>Run exact diagonalization and DMRG side-by-side to validate results and study truncation error.</p>
+  </div>
+  <div class="skill-card">
+    <h4>tenax-homework</h4>
+    <p>Generate scaffolded tensor network homework problems for graduate courses.</p>
+  </div>
+  <div class="skill-card">
+    <h4>tenax-getting-started</h4>
+    <p>Install Tenax, configure JAX backends, and run your first calculation.</p>
   </div>
 </div>
 
-### Migration
+#### Migration from Other Libraries
 
 <div class="skills-grid">
   <div class="skill-card">
