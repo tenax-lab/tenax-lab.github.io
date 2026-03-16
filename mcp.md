@@ -92,17 +92,18 @@ Tenax exposes 9 tools through the MCP server. Claude Code can call any of them d
 
 ## Tenax Toolkit (Claude Code Plugin)
 
-The [Tenax Toolkit](https://github.com/tenax-lab/tenax-toolkit) is a Claude Code plugin that gives Claude 17 domain-specific skills for tensor network simulations. Install it once and Claude automatically knows how to guide you through DMRG, iPEPS, TRG, symmetry-aware tensors, and more.
+The [Tenax Toolkit](https://github.com/tenax-lab/tenax-toolkit) is a Claude Code plugin that gives Claude 18 domain-specific skills for tensor network simulations. Install it once and Claude automatically knows how to guide you through DMRG, iPEPS, TRG, symmetry-aware tensors, and more.
 
 ### Install
 
-In Claude Code, run:
+In Claude Code, first add the plugin from the marketplace (one-time setup), then install it:
 
-```
-/install-plugin tenax-lab/tenax-toolkit
+```bash
+claude plugin marketplace add tenax-lab/tenax-toolkit
+claude plugin install tenax-toolkit
 ```
 
-That's it — all 17 skills are immediately available. Claude will automatically invoke them when your questions match (e.g., asking about DMRG triggers `tenax-dmrg-workflow`, asking about symmetries triggers `tenax-symmetry`).
+That's it — all 18 skills are immediately available. Claude will automatically invoke them when your questions match (e.g., asking about DMRG triggers `tenax-dmrg-workflow`, asking about symmetries triggers `tenax-symmetry`).
 
 ### Skills
 
@@ -120,6 +121,10 @@ That's it — all 17 skills are immediately available. Claude will automatically
   <div class="skill-card">
     <h4>tenax-trg-workflow</h4>
     <p>TRG and HOTRG for 2D classical stat mech: partition functions, free energy, and phase transitions.</p>
+  </div>
+  <div class="skill-card">
+    <h4>tenax-fermionic-ipeps</h4>
+    <p>Fermionic iPEPS with graded tensors: FermionParity, FermionicU1, spinless fermions, and the t-V model.</p>
   </div>
 </div>
 
