@@ -108,7 +108,7 @@ result = dmrg(mpo, mps, config)
 
 - Tag system — replaced by simple string labels
 - Per-sweep bond dimension schedule — use multiple DMRG runs instead
-- Built-in `expect()` / `correlation_matrix()` — compute observables manually
+- Built-in `expect()` / `correlation_matrix()` — use `expectation_value()` / `correlation()` from `tenax.algorithms.observables`
 - TEBD / TDVP — not yet implemented
 - Non-Abelian symmetry — Tenax currently supports Abelian only (U(1), Z_n)
 
@@ -139,7 +139,7 @@ TeNPy uses an object-oriented hierarchy (Site → Lattice → Model → Engine).
 - **No Model/Site/Lattice classes** — Tenax is functional. Build the Hamiltonian with AutoMPO by explicitly adding each coupling term.
 - **No Engine pattern** — Algorithms are pure functions (`dmrg(mpo, mps, config)`) returning a result dataclass, not mutable engine objects.
 - **NumPy vs JAX** — TeNPy is pure NumPy/SciPy with no GPU or autodiff. Tenax is pure JAX with GPU/TPU support and automatic differentiation.
-- **Observables** — TeNPy has rich built-in measurements (`expectation_value`, `correlation_function`, `entanglement_entropy`). Tenax requires manual contraction.
+- **Observables** — TeNPy has rich built-in measurements. Tenax provides `expectation_value()` and `correlation()` (with `anticommute=True` for fermions); entanglement entropy is computed from iDMRG singular values.
 
 ### Side-by-Side: DMRG
 
@@ -182,7 +182,7 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 ### What You Lose
 
 - Rich model library — TeNPy has dozens of pre-built models
-- Built-in observables and entanglement measures
+- Rich observable measurement library (Tenax has basic `expectation_value()` and `correlation()`)
 - Product state initialization
 - Per-sweep parameter schedules
 - TEBD / TDVP
