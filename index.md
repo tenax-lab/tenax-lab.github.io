@@ -177,6 +177,33 @@ Tenax shares core ideas with ITensor, TeNPy, Cytnx, quimb, and TensorKit.jl. Our
 <section>
 <div class="container" markdown="1">
 
+## Ecosystem
+
+### tenax-qtt — Quantic Tensor Trains
+
+[tenax-qtt](https://github.com/tenax-lab/tenax-qtt) extends Tenax to applied
+mathematics with Quantic Tensor Train algorithms:
+
+- **Function approximation** on exponentially fine grids (2^R points stored as R-site MPS)
+- **Tensor cross interpolation** (prrLU and TCI2) for black-box function compression
+- **Analytical Fourier transform** MPO via binary phase decomposition
+- **QTT arithmetic** — addition, Hadamard product, operator application, recompression
+- **Multi-dimensional** support with grouped, interleaved, and fused site layouts
+
+`pip install tenax-qtt` (coming soon) | [Documentation](https://github.com/tenax-lab/tenax-qtt)
+
+### tenax-mcp — MCP Server
+
+[tenax-mcp](https://github.com/tenax-lab/tenax-mcp) provides a Model Context Protocol server that exposes Tenax algorithms as tools for Claude and other AI assistants.
+
+<a class="cta" href="/mcp/">Learn more about MCP tools</a>
+
+</div>
+</section>
+
+<section>
+<div class="container" markdown="1">
+
 ## Installation
 
 <div class="install-grid">

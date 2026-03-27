@@ -27,6 +27,7 @@ title: Code Examples
 - [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
 - [Tensor Display & Mermaid Export](#tensor-display--mermaid-export)
+- [QTT — Quantic Tensor Trains](#qtt--quantic-tensor-trains)
 - [Runnable Scripts](#runnable-scripts)
 {: style="list-style: none; padding: 0;" }
 
@@ -383,6 +384,37 @@ print(tn.to_mermaid())
 ```
 
 Paste the Mermaid output into GitHub markdown, Mermaid Live Editor, or VS Code to render interactive diagrams.
+
+---
+
+### QTT — Quantic Tensor Trains
+
+Compress a function on an exponentially fine grid using tensor cross interpolation from [tenax-qtt](https://github.com/tenax-lab/tenax-qtt):
+
+```python
+import math
+from tenax_qtt import UniformGrid, GridSpec, cross_interpolation
+
+# Define a 1D grid: 2^10 = 1024 points on [0, 2pi]
+grid = GridSpec(variables=(UniformGrid(0, 2 * math.pi, 10),), layout="grouped")
+
+# Build a QTT from sin(x) via tensor cross interpolation
+result = cross_interpolation(lambda x: math.sin(x[0]), grid, tol=1e-8)
+qtt = result.qtt
+
+# Evaluate at a point
+val = qtt.evaluate((1.0,))
+print(f"sin(1.0) ~ {val.real:.6f}  (exact: {math.sin(1.0):.6f})")
+
+# Integrate sin(x) over [0, 2pi] (exact answer: 0)
+integral = qtt.integrate()
+print(f"integral ~ {integral.real:.6e}")
+
+# Bond dimensions (measures compression)
+print(f"bond dims: {qtt.bond_dims}")
+```
+
+`pip install tenax-qtt` (coming soon) | [More examples](https://github.com/tenax-lab/tenax-qtt/tree/main/examples)
 
 ---
 
