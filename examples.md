@@ -24,6 +24,7 @@ title: Code Examples
 - [iPEPS AD Optimization & Excitations](#ipeps-ad-optimization--excitations)
 - [iPEPS with QR Projectors](#ipeps-with-qr-projectors)
 - [iPEPS 2-Site AD Optimization](#ipeps-2-site-ad-optimization)
+- [iPEPS with L-BFGS Optimizer](#ipeps-with-l-bfgs-optimizer)
 - [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
 - [Tensor Display & Mermaid Export](#tensor-display--mermaid-export)
@@ -271,6 +272,37 @@ print(f"Ground-state energy: {E_gs:.6f}")
 
 ---
 
+### iPEPS with L-BFGS Optimizer
+
+L-BFGS with Armijo backtracking line search converges faster than Adam near the minimum. Each line search trial runs fresh CTM convergence:
+
+```python
+import jax.numpy as jnp
+from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+
+Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
+Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
+Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
+gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
+     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
+             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(chi=16, max_iter=50),
+    gs_optimizer="lbfgs",          # L-BFGS with line search
+    gs_num_steps=30,
+    gs_line_search_max_steps=8,
+    su_init=True,
+)
+A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+print(f"Ground-state energy: {E_gs:.6f}")
+```
+
+Available optimizers: `"adam"` (default, cosine lr decay), `"lbfgs"`, `"cg"`.
+
+---
+
 ### Split-CTMRG
 
 Split-CTMRG (Naumann, Weerda, Eisert, Rizzi & Schmoll, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from $O(\chi^3 D^6)$ to $O(\chi^3 D^3)$:
@@ -399,6 +431,7 @@ Complete example scripts are in the [`examples/`](https://github.com/tenax-lab/t
 | `heisenberg_ipeps_excitations.py` | iPEPS excitations | Heisenberg dispersion along Gamma-X-M-Gamma |
 | `ising_trg.py` | TRG | 2D Ising vs Onsager exact |
 | `ising_hotrg.py` | HOTRG | 2D Ising vs Onsager exact |
+| `heisenberg_tdvp.py` | TDVP | Heisenberg chain real-time evolution (1-site and 2-site) |
 
 Run any example:
 

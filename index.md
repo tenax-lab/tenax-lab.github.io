@@ -41,6 +41,10 @@ layout: default
     <p><code>jit</code>, <code>grad</code>, <code>vmap</code> work out of the box. GPU, TPU, and Metal acceleration.</p>
   </div>
   <div class="feature">
+    <h3>High performance</h3>
+    <p>Fused Cython BLAS for CPU block-sparse contractions, JIT-compiled DMRG sweeps on GPU/TPU, and multi-GPU sharding via GSPMD.</p>
+  </div>
+  <div class="feature">
     <h3>AI integration</h3>
     <p>MCP server for running calculations from Claude. Built-in skills for ground states, debugging, benchmarking, and migration from ITensor, TeNPy, Cytnx, and quimb.</p>
   </div>
@@ -69,15 +73,19 @@ layout: default
   </div>
   <div class="algo-card">
     <h3>iPEPS</h3>
-    <p>2D ground states with simple update, AD optimization, QR projectors, 2-site unit cells, and split-CTMRG</p>
+    <p>2D ground states with simple update, AD optimization (Adam, L-BFGS, CG), QR projectors, 2-site unit cells, and split-CTMRG</p>
   </div>
   <div class="algo-card">
     <h3>Fermionic iPEPS</h3>
-    <p>Simple-update fPEPS for spinless fermions with FermionParity symmetry</p>
+    <p>fPEPS with simple update and AD optimization for spinless fermions with FermionParity and FermionicU1 symmetries</p>
   </div>
   <div class="algo-card">
     <h3>Excitations</h3>
     <p>Quasiparticle spectra via iPEPS at arbitrary momenta</p>
+  </div>
+  <div class="algo-card">
+    <h3>TDVP</h3>
+    <p>Real-time and imaginary-time MPS evolution with 1-site and 2-site variants</p>
   </div>
   <div class="algo-card">
     <h3>AutoMPO</h3>
