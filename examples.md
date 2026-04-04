@@ -206,6 +206,11 @@ result = compute_excitations(A_opt, env, gate, E_gs, momenta, exc_config)
 print(result.energies.shape)  # (20, 3)
 ```
 
+> **Backward method:** By default, Tenax uses iterative VJP accumulation
+> for the CTM implicit differentiation backward pass. This is robust to
+> gauge instability in the CTM environment. The original GMRES solver is
+> available via `CTMConfig(ad_backward_method="gmres")`.
+
 ---
 
 ### iPEPS with QR Projectors
