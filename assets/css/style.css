@@ -82,6 +82,21 @@ a:hover { color: var(--accent-hover); }
 
 .hero-links a:hover { color: #fff; }
 
+/* Experimental banner */
+.experimental-banner {
+  background: #fef3c7;
+  border-bottom: 1px solid #f59e0b;
+  color: #92400e;
+  font-size: 0.9rem;
+  padding: 0.75rem 2rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.experimental-banner strong {
+  color: #78350f;
+}
+
 /* Sections */
 section {
   padding: 4rem 2rem;
@@ -202,9 +217,51 @@ p code {
   margin-bottom: 0.5rem;
 }
 
+.install-option {
+  position: relative;
+}
+
 .install-option pre {
   font-size: 0.8rem;
   padding: 0.75rem 1rem;
+}
+
+.install-option .copy-btn {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.install-option .copy-btn:hover {
+  background: rgba(255,255,255,0.18);
+  color: var(--text-light);
+}
+
+.install-option .copy-btn.copied {
+  color: #4ade80;
+  border-color: rgba(74,222,128,0.4);
+}
+
+.install-option .copy-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Footer */

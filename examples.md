@@ -24,8 +24,10 @@ title: Code Examples
 - [iPEPS AD Optimization & Excitations](#ipeps-ad-optimization--excitations)
 - [iPEPS with QR Projectors](#ipeps-with-qr-projectors)
 - [iPEPS 2-Site AD Optimization](#ipeps-2-site-ad-optimization)
+- [iPEPS with L-BFGS Optimizer](#ipeps-with-l-bfgs-optimizer)
 - [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
+- [Tensor Display & Mermaid Export](#tensor-display--mermaid-export)
 - [Runnable Scripts](#runnable-scripts)
 {: style="list-style: none; padding: 0;" }
 
@@ -105,7 +107,7 @@ print(f"Converged: {result.converged}")
 
 ### Infinite Cylinder iDMRG
 
-Heisenberg model on an infinite cylinder with circumference Ly:
+Heisenberg model on an infinite cylinder with circumference $L_y$:
 
 ```python
 from tenax import build_bulk_mpo_heisenberg_cylinder, iDMRGConfig, idmrg
@@ -204,6 +206,11 @@ result = compute_excitations(A_opt, env, gate, E_gs, momenta, exc_config)
 print(result.energies.shape)  # (20, 3)
 ```
 
+> **Backward method:** By default, Tenax uses iterative VJP accumulation
+> for the CTM implicit differentiation backward pass. This is robust to
+> gauge instability in the CTM environment. The original GMRES solver is
+> available via `CTMConfig(ad_backward_method="gmres")`.
+
 ---
 
 ### iPEPS with QR Projectors
@@ -275,9 +282,40 @@ print(f"Ground-state energy: {E_gs:.6f}")
 
 ---
 
+### iPEPS with L-BFGS Optimizer
+
+L-BFGS with Armijo backtracking line search converges faster than Adam near the minimum. Each line search trial runs fresh CTM convergence:
+
+```python
+import jax.numpy as jnp
+from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+
+Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
+Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
+Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
+gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
+     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
+             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(chi=16, max_iter=50),
+    gs_optimizer="lbfgs",          # L-BFGS with line search
+    gs_num_steps=30,
+    gs_line_search_max_steps=8,
+    su_init=True,
+)
+A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+print(f"Ground-state energy: {E_gs:.6f}")
+```
+
+Available optimizers: `"adam"` (default, cosine lr decay), `"lbfgs"`, `"cg"`.
+
+---
+
 ### Split-CTMRG
 
-Split-CTMRG (Rader & Lauchli, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from O(chi^3 D^6) to O(chi^3 D^3):
+Split-CTMRG (Naumann, Weerda, Eisert, Rizzi & Schmoll, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from $O(\chi^3 D^6)$ to $O(\chi^3 D^3)$:
 
 ```python
 import jax.numpy as jnp
@@ -310,7 +348,7 @@ E = compute_energy_split_ctm(A_opt, split_env, gate, d=2)
 print(f"Split-CTM energy: {E:.6f}")
 ```
 
-`chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting `chi_I = chi * D` makes the SVD split lossless; smaller values trade accuracy for speed.
+`chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting $\chi_I = \chi \cdot D$ makes the SVD split lossless; smaller values trade accuracy for speed.
 
 ---
 
@@ -347,6 +385,49 @@ mpo_sym = auto.to_mpo(symmetric=True)
 
 ---
 
+### Tensor Display & Mermaid Export
+
+Tensors print as ASCII box diagrams with IN legs on the left and OUT legs on the right:
+
+```python
+# DenseTensor with 2 IN legs + 1 OUT leg
+print(tensor)
+#             ┌─────────┐
+# phys (2) ──>┤ Dense   ├<── right (3)
+# left (4) ──>┤ float64 │
+#             └─────────┘
+
+# SymmetricTensor with 2 IN legs + 2 OUT legs
+print(sym_tensor)
+#             ┌──────────────┐
+# left (3) ──>┤ Symmetric    ├<── right (3)
+# phys (2) ──>┤ U(1) float64 ├<── top (4)
+#             │ 14blk nnz=14 │
+#             └──────────────┘
+#  charges: left{-1:1, 0:1, 1:1} phys{-1:1, 1:1}
+#           right{-1:1, 0:1, 1:1} top{-1:1, 0:1, 1:1, 2:1}
+```
+
+Export a `TensorNetwork` as a [Mermaid](https://mermaid.js.org/) diagram:
+
+```python
+tn = TensorNetwork(name="MPS")
+tn.add_node("A", tensor_A)
+tn.add_node("B", tensor_B)
+tn.connect("A", "bond", "B", "bond")
+print(tn.to_mermaid())
+# graph LR
+#   A["A (2,3)"]
+#   B["B (3,4)"]
+#   A ---|bond| B
+#   A -.- A_phys(("phys"))
+#   B -.- B_phys(("phys"))
+```
+
+Paste the Mermaid output into GitHub markdown, Mermaid Live Editor, or VS Code to render interactive diagrams.
+
+---
+
 ### Runnable Scripts
 
 Complete example scripts are in the [`examples/`](https://github.com/tenax-lab/tenax/tree/main/examples) directory:
@@ -354,12 +435,13 @@ Complete example scripts are in the [`examples/`](https://github.com/tenax-lab/t
 | Script | Algorithm | Model |
 |--------|-----------|-------|
 | `heisenberg_cylinder.py` | DMRG | Heisenberg on 4x2, 6x3, 8x4 cylinders |
-| `heisenberg_infinite_cylinder.py` | iDMRG | Heisenberg on infinite Ly=2, Ly=4 cylinders |
+| `heisenberg_infinite_cylinder.py` | iDMRG | Heisenberg on infinite $L_y=2$, $L_y=4$ cylinders |
 | `heisenberg_ipeps_su.py` | iPEPS simple update | Heisenberg (1x1 and 2-site unit cells) |
 | `heisenberg_ipeps_ad.py` | iPEPS AD optimization | Heisenberg (random vs SU init) |
 | `heisenberg_ipeps_excitations.py` | iPEPS excitations | Heisenberg dispersion along Gamma-X-M-Gamma |
 | `ising_trg.py` | TRG | 2D Ising vs Onsager exact |
 | `ising_hotrg.py` | HOTRG | 2D Ising vs Onsager exact |
+| `heisenberg_tdvp.py` | TDVP | Heisenberg chain real-time evolution (1-site and 2-site) |
 
 Run any example:
 

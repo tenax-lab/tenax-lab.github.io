@@ -9,7 +9,12 @@ layout: default
   <div class="hero-links">
     <a href="https://github.com/tenax-lab/tenax">GitHub</a>
     <a href="https://tenax.readthedocs.io">Docs</a>
-    <a href="https://pypi.org/project/tenax-tn/">PyPI</a>
+  </div>
+</div>
+
+<div class="experimental-banner">
+  <div class="container">
+    <strong>Experimental project</strong> — This library is under active development and largely written with the assistance of Claude Code (AI). While we test extensively, AI-generated code can contain subtle bugs. Please verify results against known benchmarks before using them in research.
   </div>
 </div>
 
@@ -34,6 +39,14 @@ layout: default
   <div class="feature">
     <h3>Pure JAX</h3>
     <p><code>jit</code>, <code>grad</code>, <code>vmap</code> work out of the box. GPU, TPU, and Metal acceleration.</p>
+  </div>
+  <div class="feature">
+    <h3>High performance</h3>
+    <p>Fused Cython BLAS for CPU block-sparse contractions, JIT-compiled DMRG sweeps on GPU/TPU, and multi-GPU sharding via GSPMD.</p>
+  </div>
+  <div class="feature">
+    <h3>AI integration</h3>
+    <p>MCP server for running calculations from Claude. Built-in skills for ground states, debugging, benchmarking, and migration from ITensor, TeNPy, Cytnx, and quimb.</p>
   </div>
 </div>
 
@@ -60,11 +73,19 @@ layout: default
   </div>
   <div class="algo-card">
     <h3>iPEPS</h3>
-    <p>2D ground states with simple update, AD optimization, QR projectors, 2-site unit cells, and split-CTMRG</p>
+    <p>2D ground states with simple update, AD optimization (Adam, L-BFGS, CG), QR projectors, 2-site unit cells, and split-CTMRG</p>
+  </div>
+  <div class="algo-card">
+    <h3>Fermionic iPEPS</h3>
+    <p>fPEPS with simple update and AD optimization for spinless fermions with FermionParity and FermionicU1 symmetries</p>
   </div>
   <div class="algo-card">
     <h3>Excitations</h3>
     <p>Quasiparticle spectra via iPEPS at arbitrary momenta</p>
+  </div>
+  <div class="algo-card">
+    <h3>TDVP</h3>
+    <p>Real-time and imaginary-time MPS evolution with 1-site and 2-site variants</p>
   </div>
   <div class="algo-card">
     <h3>AutoMPO</h3>
@@ -83,7 +104,7 @@ layout: default
 <div class="why-grid">
   <div class="why-card">
     <h3>MCP Server</h3>
-    <p>Run DMRG, TRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
+    <p>Run DMRG, TRG, HOTRG, and more directly from Claude Code. Ask questions in natural language and get tensor network calculations.</p>
   </div>
   <div class="why-card">
     <h3>Claude Code Skills</h3>
@@ -154,7 +175,7 @@ print(f"Ground state energy: {result.energy:.8f}")
 
 ## Coming From Another Library?
 
-Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration guides map concepts and code patterns so you can translate your existing work.
+Tenax shares core ideas with ITensor, TeNPy, Cytnx, quimb, and TensorKit.jl. Our migration guides map concepts and code patterns so you can translate your existing work.
 
 <a class="cta" href="/migration/">View migration guides</a>
 
@@ -168,29 +189,29 @@ Tenax shares core ideas with ITensor, TeNPy, Cytnx, and quimb. Our migration gui
 
 <div class="install-grid">
   <div class="install-option">
-    <h3>CPU</h3>
+    <h3>CPU (default)</h3>
     <pre>pip install tenax-tn</pre>
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 13)</h3>
-    <pre>pip install tenax-tn[cuda13]</pre>
+    <pre>pip install "tenax-tn[cuda13]"</pre>
   </div>
   <div class="install-option">
     <h3>NVIDIA GPU (CUDA 12)</h3>
-    <pre>pip install tenax-tn[cuda12]</pre>
+    <pre>pip install "tenax-tn[cuda12]"</pre>
   </div>
   <div class="install-option">
     <h3>Google Cloud TPU</h3>
-    <pre>pip install tenax-tn[tpu]</pre>
+    <pre>pip install "tenax-tn[tpu]"</pre>
   </div>
   <div class="install-option">
     <h3>Apple Silicon GPU</h3>
-    <pre>pip install tenax-tn[metal]</pre>
+    <pre>pip install "tenax-tn[metal]"</pre>
   </div>
   <div class="install-option">
-    <h3>Development</h3>
+    <h3>From source</h3>
     <pre>git clone https://github.com/tenax-lab/tenax.git
-cd tenax && uv sync --all-extras --dev</pre>
+cd tenax && pip install -e ".[dev]"</pre>
   </div>
 </div>
 
