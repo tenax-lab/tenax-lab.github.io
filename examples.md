@@ -239,9 +239,9 @@ print(f"Ground-state energy: {E_gs:.6f}")
 
 ---
 
-### iPEPS 2-Site AD Optimization
+### iPEPS 2-Site Shared-Tensor C4v AD
 
-For antiferromagnets (Neel order), use a 2-site checkerboard unit cell with independent tensors A and B. The backward pass uses implicit differentiation through the 2-site CTM fixed point:
+For antiferromagnets (Neel order) on the square lattice, prefer the **2-site shared-tensor C4v path**: Tenax optimizes a single C4v-parameterized tensor `A` and derives `B` from `A` by sublattice rotation (`B = e^{iπσ^y/2}` on the physical leg). This ties the two sublattices together and avoids the A/B drift that makes the unconstrained 2-site AD path unstable. Spin-1/2 (d=2) only.
 
 ```python
 import jax.numpy as jnp
@@ -256,13 +256,18 @@ gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
 
 config = iPEPSConfig(
     max_bond_dim=2,
-    ctm=CTMConfig(chi=16, max_iter=50),
-    gs_num_steps=200,
-    gs_learning_rate=1e-3,
+    ctm=CTMConfig(chi=16, max_iter=100, min_iter=50),
+    gs_optimizer="lbfgs",
+    gs_explicit_ad=True,
+    gs_explicit_ad_steps=10,
+    gs_explicit_ad_warmup=2,
+    gs_num_steps=50,
+    gs_line_search=True,
     unit_cell="2site",    # checkerboard A/B
-    su_init=True,         # simple update initialization
-    num_imaginary_steps=200,
-    dt=0.01,
+    gs_c4v=True,          # shared-tensor C4v parameterization
+    su_init=True,
+    num_imaginary_steps=100,
+    dt=0.3,
 )
 (A_opt, B_opt), (env_A, env_B), E_gs = optimize_gs_ad(gate, None, config)
 print(f"Ground-state energy: {E_gs:.6f}")
