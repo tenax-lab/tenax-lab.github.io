@@ -211,6 +211,27 @@ print(result.energies.shape)  # (20, 3)
 > gauge instability in the CTM environment. The original GMRES solver is
 > available via `CTMConfig(ad_backward_method="gmres")`.
 
+#### Chi ramping for faster convergence
+
+Use `chi_ramp` to warm up CTM at small chi before converging at the target chi (1.2--2.1x GPU speedup):
+
+```python
+from tenax import CTMConfig, iPEPSConfig, optimize_gs_ad
+
+config = iPEPSConfig(
+    max_bond_dim=2,
+    ctm=CTMConfig(
+        chi=32,
+        chi_ramp=[(8, 10), (16, 10), (32, None)],
+    ),
+    gs_num_steps=100,
+    gs_c4v=True,
+)
+A, env, E = optimize_gs_ad(gate, None, config)
+```
+
+Each tuple is `(chi, num_sweeps)`. The last entry runs to convergence.
+
 ---
 
 ### iPEPS with QR Projectors
