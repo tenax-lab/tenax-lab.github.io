@@ -73,7 +73,7 @@ layout: default
   </div>
   <div class="algo-card">
     <h3>iPEPS</h3>
-    <p>2D ground states with simple update, AD optimization (Adam, L-BFGS, CG), QR projectors, 2-site unit cells, intra-CTM chi ramping, and split-CTMRG</p>
+    <p>2D ground states with simple update, AD optimization (Adam, L-BFGS, CG) — including a memory-efficient split-CTMRG path (χ²·D⁴) for large D — QR projectors, 2-site unit cells, and intra-CTM chi ramping</p>
   </div>
   <div class="algo-card">
     <h3>Fermionic iPEPS</h3>
