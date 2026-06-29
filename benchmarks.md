@@ -153,5 +153,17 @@ python -m benchmarks.run -b cpu -a dmrg -s small medium large -n 5 --csv dmrg_sc
 - **GPU memory** — large sizes may OOM on GPUs with limited VRAM.
 - **First trial is slow** — JAX recompiles on first call. Use `--trials 5` or more for stable numbers.
 
+### Chi ramping
+
+`CTMConfig.chi_ramp` runs CTM convergence in stages at increasing chi.
+Benchmarks show 1.2--2.1x speedup on GPU with identical energies:
+
+| D | chi | Speedup |
+|---|-----|---------|
+| 2 | 16 | 1.33x |
+| 2 | 48 | 1.41x |
+| 3 | 36 | 1.51x |
+| 4 | 16 | 2.13x |
+
 </div>
 </section>
