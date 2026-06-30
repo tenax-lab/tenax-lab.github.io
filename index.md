@@ -68,6 +68,10 @@ layout: default
     <p>Infinite chains and infinite cylinders</p>
   </div>
   <div class="algo-card">
+    <h3>iTEBD</h3>
+    <p>Numerically stable infinite TEBD, including the inversion-free Hastings update</p>
+  </div>
+  <div class="algo-card">
     <h3>TRG / HOTRG</h3>
     <p>2D classical partition functions via tensor coarse-graining</p>
   </div>
@@ -78,6 +82,10 @@ layout: default
   <div class="algo-card">
     <h3>Fermionic iPEPS</h3>
     <p>fPEPS with simple update and AD optimization for spinless fermions with FermionParity and FermionicU1 symmetries</p>
+  </div>
+  <div class="algo-card">
+    <h3>PESS (kagome iPESS)</h3>
+    <p>Projected entangled simplex states for kagome lattices with simple update and AD ground-state optimization, plus a native honeycomb CTM</p>
   </div>
   <div class="algo-card">
     <h3>Excitations</h3>
