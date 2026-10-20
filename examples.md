@@ -207,10 +207,14 @@ result = compute_excitations(A_opt, env, gate, E_gs, momenta, exc_config)
 print(result.energies.shape)  # (20, 3)
 ```
 
-> **Backward method:** By default, Tenax uses iterative VJP accumulation
-> for the CTM implicit differentiation backward pass. This is robust to
-> gauge instability in the CTM environment. The original GMRES solver is
-> available via `CTMConfig(ad_backward_method="gmres")`.
+> **Backward method:** The implicit-differentiation backward solves the
+> adjoint fixed-point equation with a fused Neumann-series loop and falls
+> back to GMRES when that loop does not converge (`CTMConfig(adjoint_method="gmres")`
+> goes straight to GMRES). For symmetric tensors at D≥3, where compiling the
+> backward dominates the first step, `CTMConfig(adjoint_chain_rule="joint")`
+> (opt-in; on `main`, not yet in a release — v0.8.3 rejects it) gives the same gradient with a 23% shorter first-step compile and
+> 12 GB less peak memory (U(1) D=3, χ=16, one A100). See the
+> [AD paths guide](https://github.com/tenax-lab/tenax/blob/main/docs/guide/algorithms/ipeps_ad_paths.md).
 
 #### Chi ramping for faster convergence
 
