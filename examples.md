@@ -212,7 +212,7 @@ print(result.energies.shape)  # (20, 3)
 > back to GMRES when that loop does not converge (`CTMConfig(adjoint_method="gmres")`
 > goes straight to GMRES). For symmetric tensors at D≥3, where compiling the
 > backward dominates the first step, `CTMConfig(adjoint_chain_rule="joint")`
-> (opt-in) gives the same gradient with a 23% shorter first-step compile and
+> (opt-in; on `main`, not yet in a release — v0.8.3 rejects it) gives the same gradient with a 23% shorter first-step compile and
 > 12 GB less peak memory (U(1) D=3, χ=16, one A100). See the
 > [AD paths guide](https://github.com/tenax-lab/tenax/blob/main/docs/guide/algorithms/ipeps_ad_paths.md).
 
