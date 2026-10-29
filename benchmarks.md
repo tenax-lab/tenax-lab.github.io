@@ -41,10 +41,10 @@ python -m benchmarks.run [OPTIONS]
 
 | Flag | Description | Values |
 |------|-------------|--------|
-| `-b`, `--backend` | Hardware backend | `cpu`, `cuda`, `tpu`, `metal` |
-| `-a`, `--algorithm` | Algorithm(s) to benchmark | `dmrg`, `idmrg`, `trg`, `hotrg`, `ipeps`, `all` |
+| `-b`, `--backend` | Hardware backend | `cpu`, `cuda`, `tpu`, `metal`, `auto` (default) |
+| `-a`, `--algorithm` | Algorithm(s) to benchmark | `dmrg`, `idmrg`, `trg`, `hotrg`, `ipeps`, `ipeps_ad`, `dmrg_sharded`, `all` |
 | `-s`, `--size` | Problem size(s) | `small`, `medium`, `large`, `all` |
-| `-n`, `--trials` | Number of trials per config | Integer (default varies) |
+| `-n`, `--trials` | Number of trials per config | Integer (default 3) |
 | `-o`, `--output` | Save results to JSON | File path |
 | `--csv` | Save results to CSV | File path |
 | `--list-backends` | Show available backends | — |
@@ -61,21 +61,24 @@ Each algorithm defines three problem sizes. Larger sizes stress-test bond dimens
 
 | Algorithm | Size | Parameters |
 |-----------|------|------------|
-| DMRG | small | L=10, chi=20, 5 sweeps |
-| DMRG | medium | L=20, chi=50, 10 sweeps |
-| DMRG | large | L=40, chi=100, 10 sweeps |
-| iDMRG | small | chi=16, 50 iterations |
-| iDMRG | medium | chi=32, 100 iterations |
-| iDMRG | large | chi=64, 200 iterations |
-| TRG | small | chi=8, 16 steps |
-| TRG | medium | chi=16, 20 steps |
-| TRG | large | chi=32, 24 steps |
-| HOTRG | small | chi=8, 12 steps |
-| HOTRG | medium | chi=16, 16 steps |
-| HOTRG | large | chi=32, 20 steps |
-| iPEPS | small | D=2, chi=8, 100 SU steps |
-| iPEPS | medium | D=3, chi=16, 200 SU steps |
-| iPEPS | large | D=4, chi=24, 300 SU steps |
+| DMRG | small | L=20, chi=32, 5 sweeps |
+| DMRG | medium | L=40, chi=64, 5 sweeps |
+| DMRG | large | L=80, chi=128, 3 sweeps |
+| iDMRG | small | chi=32, 50 iterations |
+| iDMRG | medium | chi=64, 100 iterations |
+| iDMRG | large | chi=128, 50 iterations |
+| TRG | small | chi=8, 15 steps |
+| TRG | medium | chi=24, 20 steps |
+| TRG | large | chi=48, 20 steps |
+| HOTRG | small | chi=8, 10 steps |
+| HOTRG | medium | chi=20, 15 steps |
+| HOTRG | large | chi=40, 15 steps |
+| iPEPS | small | D=2, chi=8, 50 SU steps |
+| iPEPS | medium | D=3, chi=16, 50 SU steps |
+| iPEPS | large | D=4, chi=24, 30 SU steps |
+| iPEPS AD | small | D=2, chi=8, 20 AD steps |
+| iPEPS AD | medium | D=2, chi=16, 30 AD steps |
+| iPEPS AD | large | D=3, chi=16, 20 AD steps |
 
 </div>
 </section>
@@ -156,7 +159,8 @@ python -m benchmarks.run -b cpu -a dmrg -s small medium large -n 5 --csv dmrg_sc
 ### Chi ramping
 
 `CTMConfig.chi_ramp` runs CTM convergence in stages at increasing chi.
-Benchmarks show 1.2--2.1x speedup on GPU with identical energies:
+It is deprecated (#512) in favor of in-CTM chi growth (`ctmrg_heuristic_increase_chi=True` with `chi_max`).
+Benchmarks of `chi_ramp` showed 1.2--2.1x speedup on GPU with identical energies:
 
 | D | chi | Speedup |
 |---|-----|---------|

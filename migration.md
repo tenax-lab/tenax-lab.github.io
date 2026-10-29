@@ -42,15 +42,15 @@ ITensor and Tenax share label-based contraction and AutoMPO. The main difference
 
 | ITensor (Julia) | Tenax (Python) | Notes |
 |-----------------|----------------|-------|
-| `Index(dim, "label")` | `TensorIndex(sym, charges, flow, label)` | Tenax carries symmetry + flow |
+| `Index(dim, "label")` | `TensorIndex.from_charges(sym, charges, flow, label)` | Tenax carries symmetry + flow |
 | `ITensor(idx1, idx2)` | `DenseTensor(data, indices)` | Tenax requires explicit data |
-| `randomITensor(...)` | `DenseTensor.random_normal(indices, key)` | JAX needs explicit RNG key |
+| `randomITensor(...)` | `DenseTensor(jax.random.normal(key, shape), indices)` | JAX needs explicit RNG key |
 | `dag(idx)` | `idx.dual()` | Flip FlowDirection |
 | `A * B` | `contract(A, B)` | Both label-based |
 | `svd(T, i1, i2)` | `truncated_svd(T, left_labels, right_labels)` | By labels, not Index objects |
 | `AutoMPO()` | `AutoMPO(L, d)` | Very similar API |
 | `dmrg(H, psi0, sweeps)` | `dmrg(mpo, mps, config)` | Config replaces Sweeps object |
-| `siteinds("S=1/2", N)` | `build_random_mps(L, physical_dim=2)` | No site-type system |
+| `siteinds("S=1/2", N)` | `FiniteMPS.random(L=L, d=2, chi=chi, key=key)` | No site-type system |
 
 ### Key Differences
 
@@ -83,7 +83,8 @@ energy, psi = dmrg(H, psi0, sweeps)
 **Tenax (Python):**
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 L = 20
 auto = AutoMPO(L=L, d=2)
@@ -92,7 +93,7 @@ for i in range(L - 1):
     auto += (0.5, "Sp", i, "Sm", i + 1)
     auto += (0.5, "Sm", i, "Sp", i + 1)
 mpo = auto.to_mpo()
-mps = build_random_mps(L, physical_dim=2, bond_dim=10)
+mps = FiniteMPS.random(L=L, d=2, chi=10, key=jax.random.PRNGKey(0))
 config = DMRGConfig(max_bond_dim=100, num_sweeps=10)
 result = dmrg(mpo, mps, config)
 ```
@@ -109,7 +110,6 @@ result = dmrg(mpo, mps, config)
 - Tag system — replaced by simple string labels
 - Per-sweep bond dimension schedule — use multiple DMRG runs instead
 - Built-in `expect()` / `correlation_matrix()` — use `expectation_value()` / `correlation()` from `tenax.algorithms.observables`
-- TEBD / TDVP — not yet implemented
 - Non-Abelian symmetry — Tenax currently supports Abelian only (U(1), Z_n)
 
 </div>
@@ -127,7 +127,7 @@ TeNPy uses an object-oriented hierarchy (Site → Lattice → Model → Engine).
 | TeNPy | Tenax | Notes |
 |-------|-------|-------|
 | `SpinHalfSite()` | `spin_half_ops()` | Returns operator dict, no Site object |
-| `MPS.from_lat_product_state(...)` | `build_random_mps(L, d, chi)` | No lattice/product-state builder |
+| `MPS.from_lat_product_state(...)` | `FiniteMPS.random(L=L, d=d, chi=chi, key=key)` | No lattice/product-state builder |
 | `MPOModel` / `CouplingMPOModel` | `AutoMPO(L, d)` | Functional, not class-based |
 | `TwoSiteDMRGEngine(psi, model, params)` | `dmrg(mpo, mps, config)` | Functional API |
 | `eng.run()` | `result = dmrg(mpo, mps, config)` | Returns result dataclass |
@@ -159,7 +159,8 @@ E, psi = eng.run()
 **Tenax:**
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 L = 20
 auto = AutoMPO(L=L, d=2)
@@ -168,7 +169,7 @@ for i in range(L - 1):
     auto += (0.5, "Sp", i, "Sm", i + 1)
     auto += (0.5, "Sm", i, "Sp", i + 1)
 mpo = auto.to_mpo()
-mps = build_random_mps(L, physical_dim=2, bond_dim=16)
+mps = FiniteMPS.random(L=L, d=2, chi=16, key=jax.random.PRNGKey(0))
 result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 ```
 
@@ -185,7 +186,7 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 - Rich observable measurement library (Tenax has basic `expectation_value()` and `correlation()`)
 - Product state initialization
 - Per-sweep parameter schedules
-- TEBD / TDVP
+- Finite-system TEBD (Tenax has TDVP and infinite TEBD)
 
 </div>
 </section>
@@ -303,7 +304,8 @@ dmrg.solve(tol=1e-9)
 **Tenax:**
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 L = 20
 auto = AutoMPO(L=L, d=2)
@@ -312,7 +314,7 @@ for i in range(L - 1):
     auto += (0.5, "Sp", i, "Sm", i + 1)
     auto += (0.5, "Sm", i, "Sp", i + 1)
 mpo = auto.to_mpo()
-mps = build_random_mps(L, physical_dim=2, bond_dim=10)
+mps = FiniteMPS.random(L=L, d=2, chi=10, key=jax.random.PRNGKey(0))
 result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 ```
 
@@ -330,7 +332,7 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 - `cotengra` integration — advanced contraction path optimization
 - Visualization — `tn.draw()` for tensor network diagrams
 - Backend flexibility — Tenax is JAX-only
-- TEBD / TDVP
+- Finite-system TEBD (Tenax has TDVP and infinite TEBD)
 
 </div>
 </section>
@@ -347,7 +349,7 @@ TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fer
 | TensorKit.jl (Julia) | Tenax (Python) | Notes |
 |----------------------|----------------|-------|
 | `TensorMap{S}(data, cod ← dom)` | `SymmetricTensor(blocks, indices)` | No codomain/domain partition in Tenax |
-| `GradedSpace[Irrep](d₀ => n₀, ...)` | `TensorIndex(sym, charges, flow, label)` | Tenax carries label on the index |
+| `GradedSpace[Irrep](d₀ => n₀, ...)` | `TensorIndex.from_charges(sym, charges, flow, label)` | Tenax carries label on the index |
 | `FermionParity` (sector, `isodd::Bool`) | `FermionParity` (symmetry, charges 0/1) | Equivalent Z₂ grading |
 | `FermionNumber` = `U1Irrep ⊠ FermionParity` | `FermionicU1(grading=...)` | TensorKit uses Deligne product `⊠`; Tenax uses single class with configurable grading |
 | `FermionSpin` = `SU2Irrep ⊠ FermionParity` | — | No non-Abelian symmetry in Tenax |
@@ -355,8 +357,8 @@ TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fer
 | `BraidingStyle: Bosonic(), Fermionic()` | `BraidingStyle: BOSONIC, FERMIONIC` | Same concept, type hierarchy vs enum |
 | `Rsymbol(a, b, c)` | `sym.exchange_sign(q_a, q_b)` | R-symbol vs explicit sign function |
 | `twist(a)` | `sym.twist_phase(q)` | Both return (−1)^p for odd sectors |
-| `braid(t, perm, levels)` | `t.transpose(labels)` | TensorKit distinguishes over/under crossings; Tenax uses symmetric braiding only |
-| `permute(t, (i...,), (j...,))` | `t.transpose(labels)` | TensorKit repartitions codomain/domain; Tenax has no partition |
+| `braid(t, perm, levels)` | `t.transpose(axes)` | TensorKit distinguishes over/under crossings; Tenax uses symmetric braiding only |
+| `permute(t, (i...,), (j...,))` | `t.transpose(axes)` | TensorKit repartitions codomain/domain; Tenax has no partition |
 | `@tensor C[...] := A[...] * B[...]` | `contract(A, B)` | TensorKit's fermionic `@tensor` is still TODO; Tenax handles fermionic signs automatically |
 | `tsvd(t)` | `truncated_svd(t, left_labels, right_labels)` | Both handle fermionic signs in factorisation |
 | — | `AutoMPO`, `dmrg`, `idmrg`, `trg`, `ipeps` | Algorithms live in MPSKit.jl for TensorKit |
@@ -392,9 +394,9 @@ import numpy as np, jax
 sym = FermionParity()
 T = SymmetricTensor.random_normal(
     indices=(
-        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v1"),
-        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v2"),
-        TensorIndex(sym, np.array([0, 1], dtype=np.int32), FlowDirection.OUT, label="w"),
+        TensorIndex.from_charges(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v1"),
+        TensorIndex.from_charges(sym, np.array([0, 1], dtype=np.int32), FlowDirection.IN,  label="v2"),
+        TensorIndex.from_charges(sym, np.array([0, 1], dtype=np.int32), FlowDirection.OUT, label="w"),
     ),
     key=jax.random.PRNGKey(0),
 )
