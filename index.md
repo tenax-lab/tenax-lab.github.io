@@ -42,7 +42,7 @@ layout: default
   </div>
   <div class="feature">
     <h3>High performance</h3>
-    <p>Fused Cython BLAS for CPU block-sparse contractions, JIT-compiled DMRG sweeps on GPU/TPU, and multi-GPU sharding via GSPMD.</p>
+    <p>Fused Cython BLAS for CPU block-sparse contractions, JIT-compiled DMRG sweeps on GPU/TPU, polar GPU SVDs for large matrices, and multi-GPU sharding via GSPMD.</p>
   </div>
   <div class="feature">
     <h3>AI integration</h3>
@@ -73,11 +73,11 @@ layout: default
   </div>
   <div class="algo-card">
     <h3>TRG / HOTRG</h3>
-    <p>2D classical partition functions via tensor coarse-graining</p>
+    <p>2D classical partition functions via tensor coarse-graining, with GILT filtering (Gilt-TNR, Gilt-HOTRG)</p>
   </div>
   <div class="algo-card">
     <h3>iPEPS</h3>
-    <p>2D ground states with simple update, AD optimization (Adam, L-BFGS, CG) — including a memory-efficient split-CTMRG path (χ²·D⁴) for large D — QR projectors, 2-site unit cells, and intra-CTM chi ramping</p>
+    <p>2D ground states with simple update (belief-propagation bond gauge), AD optimization (L-BFGS, Adam, CG) — including a memory-efficient dense split-CTMRG path (χ²·D⁴) for large D — QR projectors, 2-site unit cells, and intra-CTM chi ramping</p>
   </div>
   <div class="algo-card">
     <h3>Fermionic iPEPS</h3>
@@ -131,7 +131,8 @@ layout: default
 ## Code Example
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 L = 20
 auto = AutoMPO(L)
@@ -141,7 +142,7 @@ for i in range(L - 1):
     auto += (0.5, "Sm", i, "Sp", i + 1)
 
 mpo = auto.to_mpo()
-mps = build_random_mps(L, bond_dim=4)
+mps = FiniteMPS.random(L=L, d=2, chi=4, key=jax.random.PRNGKey(0))
 result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 print(f"Ground state energy: {result.energy:.8f}")
 ```
@@ -159,7 +160,7 @@ print(f"Ground state energy: {result.energy:.8f}")
 <div class="why-grid">
   <div class="why-card">
     <h3>Fully differentiable</h3>
-    <p>Every algorithm works with JAX's <code>grad</code> and <code>jit</code>. AD-based iPEPS optimization uses implicit differentiation through the CTM fixed point for stable gradients.</p>
+    <p>Every algorithm works with JAX's <code>grad</code> and <code>jit</code>. AD-based iPEPS optimization uses implicit differentiation through the CTM fixed point, with the projector response included by default, for stable gradients.</p>
   </div>
   <div class="why-card">
     <h3>Run anywhere</h3>
@@ -249,6 +250,8 @@ mathematics with Quantic Tensor Train algorithms:
 cd tenax && pip install -e ".[dev]"</pre>
   </div>
 </div>
+
+**v0.9.0** is a correctness release: if you have results from earlier versions, re-check them — see the [changelog](https://github.com/tenax-lab/tenax/blob/main/CHANGELOG.md).
 
 </div>
 </section>

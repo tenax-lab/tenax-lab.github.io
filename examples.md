@@ -20,10 +20,11 @@ title: Code Examples
 - [iDMRG](#idmrg)
 - [Infinite Cylinder iDMRG](#infinite-cylinder-idmrg)
 - [TRG — 2D Ising Model](#trg--2d-ising-model)
+- [Gilt-TNR](#gilt-tnr)
 - [iPEPS Simple Update](#ipeps-simple-update)
 - [iPEPS AD Optimization & Excitations](#ipeps-ad-optimization--excitations)
 - [iPEPS with QR Projectors](#ipeps-with-qr-projectors)
-- [iPEPS 2-Site AD Optimization](#ipeps-2-site-ad-optimization)
+- [iPEPS 2-Site Shared-Tensor C4v AD](#ipeps-2-site-shared-tensor-c4v-ad)
 - [iPEPS with L-BFGS Optimizer](#ipeps-with-l-bfgs-optimizer)
 - [Split-CTMRG](#split-ctmrg)
 - [AutoMPO](#autompo)
@@ -41,7 +42,8 @@ title: Code Examples
 Finite DMRG for the spin-1/2 Heisenberg chain using AutoMPO:
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 L = 20
 auto = AutoMPO(L)
@@ -51,7 +53,7 @@ for i in range(L - 1):
     auto += (0.5, "Sm", i, "Sp", i + 1)
 
 mpo = auto.to_mpo()
-mps = build_random_mps(L, bond_dim=4)
+mps = FiniteMPS.random(L=L, d=2, chi=4, key=jax.random.PRNGKey(0))
 result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 print(f"Ground state energy: {result.energy:.8f}")
 ```
@@ -63,7 +65,8 @@ print(f"Ground state energy: {result.energy:.8f}")
 Heisenberg model on a 6x3 cylinder mapped to a 1D chain via AutoMPO:
 
 ```python
-from tenax import AutoMPO, DMRGConfig, build_random_mps, dmrg
+import jax
+from tenax import AutoMPO, DMRGConfig, FiniteMPS, dmrg
 
 Lx, Ly, N = 6, 3, 18
 auto = AutoMPO(L=N, d=2)
@@ -82,7 +85,7 @@ for x in range(Lx):
             auto += (0.5, "Sm", i, "Sp", j)
 
 mpo = auto.to_mpo(compress=True)
-mps = build_random_mps(N, physical_dim=2, bond_dim=16)
+mps = FiniteMPS.random(L=N, d=2, chi=16, key=jax.random.PRNGKey(0))
 config = DMRGConfig(max_bond_dim=100, num_sweeps=10, verbose=True)
 result = dmrg(mpo, mps, config)
 print(f"E/N = {result.energy / N:.8f}")
@@ -141,6 +144,31 @@ print(f"TRG:   {f_trg:.8f}")
 print(f"Exact: {f_exact:.8f}")
 ```
 
+`ising_free_energy_exact` returns the free energy per site $f = -\ln Z / (N\beta)$, so compare it with `-log_z_per_n / beta`.
+
+---
+
+### Gilt-TNR
+
+GILT (graph-independent local truncation) removes corner-double-line entanglement before every TRG step; `gilt_tnr` is a drop-in counterpart of `trg` (and `gilt_hotrg` of `hotrg`):
+
+```python
+from tenax import (
+    GiltConfig, GiltTNRConfig, TRGConfig, gilt_tnr, trg,
+    compute_ising_tensor, ising_free_energy_exact,
+)
+
+beta_c = 0.44068679350977147  # Onsager critical point
+T = compute_ising_tensor(beta_c)
+
+log_z_gilt = gilt_tnr(T, GiltTNRConfig(max_bond_dim=8, num_steps=20,
+                                       gilt=GiltConfig(gilt_eps=1e-6)))
+log_z_trg = trg(T, TRGConfig(max_bond_dim=8, num_steps=20))
+f_exact = ising_free_energy_exact(beta_c)
+print(f"Gilt-TNR error: {abs(-log_z_gilt / beta_c - f_exact):.1e}")  # ~1e-4
+print(f"TRG error:      {abs(-log_z_trg / beta_c - f_exact):.1e}")   # ~5e-3
+```
+
 ---
 
 ### iPEPS Simple Update
@@ -161,12 +189,12 @@ gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
 config = iPEPSConfig(
     max_bond_dim=2,
     num_imaginary_steps=200,
-    dt=0.3,
+    dt=0.05,
     ctm=CTMConfig(chi=10, max_iter=40),
     unit_cell="2site",
 )
 energy, peps, (env_A, env_B) = ipeps(gate, None, config)
-print(f"Energy per site: {energy:.6f}")  # ~ -0.65
+print(f"Energy per site: {energy:.6f}")  # ~ -0.63
 ```
 
 ---
@@ -176,34 +204,32 @@ print(f"Energy per site: {energy:.6f}")  # ~ -0.65
 Gradient-based ground state optimization via implicit differentiation through the CTM fixed point, followed by quasiparticle excitation spectra:
 
 ```python
-import jax.numpy as jnp
 from tenax import (
     iPEPSConfig, CTMConfig, optimize_gs_ad,
+    heisenberg_gate, sublattice_rotate_gate,
     ExcitationConfig, compute_excitations, make_momentum_path,
 )
 
-Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
-Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
-Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
-gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
-     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
-             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+# A 1-site (uniform) ansatz needs the sublattice-rotated Heisenberg gate
+H_rot = sublattice_rotate_gate(heisenberg_gate())
 
-# AD ground-state optimization
+# AD ground-state optimization (L-BFGS, C4v-symmetric tensor)
 config = iPEPSConfig(
     max_bond_dim=2,
-    ctm=CTMConfig(chi=16, max_iter=50),
-    gs_num_steps=200,
-    gs_learning_rate=1e-3,
+    num_imaginary_steps=200,
+    dt=0.05,
+    ctm=CTMConfig(chi=16, max_iter=80, conv_tol=1e-8, projector_method="qr"),
+    gs_num_steps=50,
+    gs_c4v=True,
     su_init=True,
 )
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
-print(f"Ground-state energy: {E_gs:.6f}")
+A_opt, env, E_gs = optimize_gs_ad(H_rot, None, config)
+print(f"Ground-state energy: {E_gs:.6f}")  # ~ -0.66
 
 # Quasiparticle excitations
 momenta = make_momentum_path("brillouin", num_points=20)
 exc_config = ExcitationConfig(num_excitations=3)
-result = compute_excitations(A_opt, env, gate, E_gs, momenta, exc_config)
+result = compute_excitations(A_opt, env, H_rot, E_gs, momenta, exc_config)
 print(result.energies.shape)  # (20, 3)
 ```
 
@@ -212,57 +238,66 @@ print(result.energies.shape)  # (20, 3)
 > back to GMRES when that loop does not converge (`CTMConfig(adjoint_method="gmres")`
 > goes straight to GMRES).
 
-#### Chi ramping for faster convergence
+> **Defaults changed in v0.9.0:** `gs_conv_criterion="grad_norm"` (expect more
+> steps, and `converged=False` where earlier versions reported `True`),
+> `CTMConfig.projector_backward="auto"` (the gradient includes the projector
+> response; `"standard"` restores the old behaviour), `gs_stall_recovery="reset"`
+> on 1-site cells too, and `CTMConfig.adjoint_chain_rule="auto"` (the joint VJP:
+> same gradient, shorter compile).
 
-Use `chi_ramp` to warm up CTM at small chi before converging at the target chi (1.2--2.1x GPU speedup):
+> **Block-sparse AD:** `CTMConfig(ctm_ad_mode="root_implicit_symmetric")` runs
+> the root-implicit engine on `SymmetricTensor` site tensors (1x1 only; pass an
+> explicit symmetric `A_init`). It is expensive (~180 s per gradient at D=2,
+> χ=4) and its gradient accuracy is not yet established — see the
+> [AD paths guide](https://github.com/tenax-lab/tenax/blob/v0.9.0/docs/guide/algorithms/ipeps_ad_paths.md).
+
+#### Growing chi inside CTM
+
+Start CTM at a small chi and let it grow up to `chi_max` while it converges (the variPEPS in-CTM chi bump), so the optimizer always sees an environment converged at the current chi:
 
 ```python
 from tenax import CTMConfig, iPEPSConfig, optimize_gs_ad
 
 config = iPEPSConfig(
     max_bond_dim=2,
-    ctm=CTMConfig(
-        chi=32,
-        chi_ramp=[(8, 10), (16, 10), (32, None)],
-    ),
-    gs_num_steps=100,
+    dt=0.05,
+    ctm=CTMConfig(chi=8, chi_max=32, max_iter=80, ctmrg_heuristic_increase_chi=True),
+    gs_num_steps=50,
     gs_c4v=True,
 )
-A, env, E = optimize_gs_ad(gate, None, config)
+A, env, E = optimize_gs_ad(H_rot, None, config)
 ```
 
-Each tuple is `(chi, num_sweeps)`. The last entry runs to convergence.
+The older scheduled `CTMConfig.chi_ramp` still works but is deprecated (#512).
 
 ---
 
 ### iPEPS with QR Projectors
 
-QR-based projectors replace the expensive eigendecomposition in CTM with a QR factorization, giving significant speedups for large bond dimensions:
+QR-based projectors replace the SVD in CTM with a QR factorization, giving significant speedups for large bond dimensions:
 
 ```python
-import jax.numpy as jnp
-from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+from tenax import (
+    iPEPSConfig, CTMConfig, optimize_gs_ad,
+    heisenberg_gate, sublattice_rotate_gate,
+)
 
-Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
-Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
-Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
-gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
-     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
-             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+H_rot = sublattice_rotate_gate(heisenberg_gate())
 
 config = iPEPSConfig(
     max_bond_dim=2,
+    dt=0.05,
     ctm=CTMConfig(
         chi=16,
-        max_iter=50,
-        projector_method="qr",   # QR instead of eigh
-        qr_warmup_steps=5,       # eigh warm-up before QR kicks in
+        max_iter=80,
+        projector_method="qr",   # QR instead of the default SVD
+        qr_warmup_steps=5,       # SVD warm-up sweeps before QR kicks in
     ),
-    gs_num_steps=200,
-    gs_learning_rate=1e-3,
+    gs_num_steps=50,
+    gs_c4v=True,
     su_init=True,
 )
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+A_opt, env, E_gs = optimize_gs_ad(H_rot, None, config)
 print(f"Ground-state energy: {E_gs:.6f}")
 ```
 
@@ -296,7 +331,7 @@ config = iPEPSConfig(
     gs_c4v=True,          # shared-tensor C4v parameterization
     su_init=True,
     num_imaginary_steps=100,
-    dt=0.3,
+    dt=0.05,
 )
 (A_opt, B_opt), (env_A, env_B), E_gs = optimize_gs_ad(gate, None, config)
 print(f"Ground-state energy: {E_gs:.6f}")
@@ -309,29 +344,28 @@ print(f"Ground-state energy: {E_gs:.6f}")
 L-BFGS with Armijo backtracking line search converges faster than Adam near the minimum. Each line search trial runs fresh CTM convergence:
 
 ```python
-import jax.numpy as jnp
-from tenax import iPEPSConfig, CTMConfig, optimize_gs_ad
+from tenax import (
+    iPEPSConfig, CTMConfig, optimize_gs_ad,
+    heisenberg_gate, sublattice_rotate_gate,
+)
 
-Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
-Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
-Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
-gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
-     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
-             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+H_rot = sublattice_rotate_gate(heisenberg_gate())
 
 config = iPEPSConfig(
     max_bond_dim=2,
-    ctm=CTMConfig(chi=16, max_iter=50),
-    gs_optimizer="lbfgs",          # L-BFGS with line search
+    dt=0.05,
+    ctm=CTMConfig(chi=16, max_iter=80),
+    gs_optimizer="lbfgs",          # L-BFGS with line search (the default)
     gs_num_steps=30,
     gs_line_search_max_steps=8,
+    gs_c4v=True,
     su_init=True,
 )
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+A_opt, env, E_gs = optimize_gs_ad(H_rot, None, config)
 print(f"Ground-state energy: {E_gs:.6f}")
 ```
 
-Available optimizers: `"adam"` (default, cosine lr decay), `"lbfgs"`, `"cg"`.
+Available optimizers: `"lbfgs"` (default), `"adam"` (cosine lr decay), `"cg"`.
 
 ---
 
@@ -340,37 +374,36 @@ Available optimizers: `"adam"` (default, cosine lr decay), `"lbfgs"`, `"cg"`.
 Split-CTMRG (Naumann, Weerda, Eisert, Rizzi & Schmoll, [arXiv:2502.10298](https://arxiv.org/abs/2502.10298)) keeps ket and bra layers separate in CTM edge tensors, reducing projector cost from $O(\chi^3 D^6)$ to $O(\chi^3 D^3)$:
 
 ```python
-import jax.numpy as jnp
 from tenax import (
     iPEPSConfig, CTMConfig, optimize_gs_ad,
+    heisenberg_gate, sublattice_rotate_gate,
     ctm_split, compute_energy_split_ctm,
 )
 
-Sz = 0.5 * jnp.array([[1.0, 0.0], [0.0, -1.0]])
-Sp = jnp.array([[0.0, 1.0], [0.0, 0.0]])
-Sm = jnp.array([[0.0, 0.0], [1.0, 0.0]])
-gate = jnp.einsum("ij,kl->ikjl", Sz, Sz) \
-     + 0.5 * (jnp.einsum("ij,kl->ikjl", Sp, Sm)
-             + jnp.einsum("ij,kl->ikjl", Sm, Sp))
+H_rot = sublattice_rotate_gate(heisenberg_gate())
 
 # First optimize with standard CTM
 config = iPEPSConfig(
     max_bond_dim=2,
-    ctm=CTMConfig(chi=16, max_iter=50),
-    gs_num_steps=200,
-    gs_learning_rate=1e-3,
+    dt=0.05,
+    ctm=CTMConfig(chi=16, max_iter=80, projector_method="qr"),
+    gs_num_steps=50,
+    gs_c4v=True,
     su_init=True,
 )
-A_opt, env, E_gs = optimize_gs_ad(gate, None, config)
+A_opt, env, E_gs = optimize_gs_ad(H_rot, None, config)
 
-# Evaluate with split-CTMRG
+# Evaluate with split-CTMRG (takes raw arrays)
+A = A_opt.todense()
 split_config = CTMConfig(chi=16, max_iter=100, chi_I=10)
-split_env = ctm_split(A_opt, split_config)
-E = compute_energy_split_ctm(A_opt, split_env, gate, d=2)
+split_env = ctm_split(A, split_config)
+E = compute_energy_split_ctm(A, split_env, H_rot.todense(), d=2)
 print(f"Split-CTM energy: {E:.6f}")
 ```
 
 `chi_I` controls the interlayer bond dimension between ket and bra edge tensors. Setting $\chi_I = \chi \cdot D$ makes the SVD split lossless; smaller values trade accuracy for speed.
+
+Split-CTMRG is dense-only: `ctm_split_tensor` and `CTMConfig(fuse_virtual_legs=False)` raise `NotImplementedError` on `SymmetricTensor` input. Symmetric iPEPS uses the default fused CTM.
 
 ---
 
@@ -494,7 +527,7 @@ Complete example scripts are in the [`examples/`](https://github.com/tenax-lab/t
 | `heisenberg_ipeps_excitations.py` | iPEPS excitations | Heisenberg dispersion along Gamma-X-M-Gamma |
 | `ising_trg.py` | TRG | 2D Ising vs Onsager exact |
 | `ising_hotrg.py` | HOTRG | 2D Ising vs Onsager exact |
-| `heisenberg_tdvp.py` | TDVP | Heisenberg chain real-time evolution (1-site and 2-site) |
+| `gilt_hotrg_ising.py` | Gilt-HOTRG | 2D Ising critical point |
 
 Run any example:
 
