@@ -342,7 +342,7 @@ result = dmrg(mpo, mps, DMRGConfig(max_bond_dim=100, num_sweeps=10))
 
 ## TensorKit.jl
 
-TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fermionic statistics. TensorKit uses a category-theoretic framework (fusion trees, R-symbols, ribbon twists) that generalises to non-Abelian and anyonic symmetries. Tenax takes a more direct approach with explicit Koszul signs and a JAX backend for autodiff and GPU acceleration.
+TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fermionic statistics. TensorKit uses a category-theoretic framework (fusion trees, R-symbols, ribbon twists) that generalises to non-Abelian and anyonic symmetries. Tenax takes a more direct approach: an explicit sign-free planar convention, with Koszul signs only where a leg order is changed, and a JAX backend for autodiff and GPU acceleration.
 
 ### Concept Mapping
 
@@ -359,19 +359,19 @@ TensorKit.jl and Tenax both support symmetry-aware block-sparse tensors with fer
 | `twist(a)` | `sym.twist_phase(q)` | Both return (−1)^p for odd sectors |
 | `braid(t, perm, levels)` | `t.transpose(axes)` | TensorKit distinguishes over/under crossings; Tenax uses symmetric braiding only |
 | `permute(t, (i...,), (j...,))` | `t.transpose(axes)` | TensorKit repartitions codomain/domain; Tenax has no partition |
-| `@tensor C[...] := A[...] * B[...]` | `contract(A, B)` | TensorKit's fermionic `@tensor` is still TODO; Tenax handles fermionic signs automatically |
-| `tsvd(t)` | `truncated_svd(t, left_labels, right_labels)` | Both handle fermionic signs in factorisation |
+| `@tensor C[...] := A[...] * B[...]` | `contract(A, B)` | Tenax's `contract` applies no fermionic signs (planar convention, #555); line crossings need an explicit `swap_gate` |
+| `tsvd(t)` | `truncated_svd(t, left_labels, right_labels)` | Tenax's factorisations apply no sign when matricizing (#997), so the factors recombine under `contract` |
 | — | `AutoMPO`, `dmrg`, `idmrg`, `trg`, `ipeps` | Algorithms live in MPSKit.jl for TensorKit |
 
 ### Key Differences
 
-- **Category theory vs explicit signs** — TensorKit encodes fermionic statistics via abstract R-symbols, fusion trees, and ribbon twists. Tenax applies Koszul signs directly in each operation (`contract`, `transpose`, `truncated_svd`, `dagger`). The categorical approach extends to anyons; the explicit approach is simpler to audit and debug.
+- **Category theory vs a planar convention** — TensorKit encodes fermionic statistics via abstract R-symbols, fusion trees, and ribbon twists, applied wherever lines braid. Tenax uses a sign-free planar convention: `contract` and the SVD/QR matricization apply no signs (#555, #997); `SymmetricTensor.transpose` applies the Koszul sign and `dagger` the super-algebra sign; any line crossing in a network must be inserted explicitly with `SymmetricTensor.swap_gate`. That is exact for planar networks, which is what Tenax's own CTM, RDM and energy code builds. The categorical approach extends to anyons and non-planar networks; the planar convention is simpler to audit.
 - **Non-Abelian + fermionic** — TensorKit supports `FermionSpin` = `SU2Irrep ⊠ FermionParity` and arbitrary non-Abelian groups. Tenax currently supports only Abelian symmetries (U(1), Z_n) and their fermionic variants.
-- **Fermionic contraction** — Tenax's `contract()` handles fermionic signs automatically and is fully tested. TensorKit's `@tensor` macro for fermionic contraction is [documented as TODO](https://quantumkithub.github.io/TensorKit.jl/stable/man/tensormanipulations/), requiring manual `braid()` calls for fermionic networks.
+- **Fermionic contraction** — neither library contracts an arbitrary fermionic network with no sign work from the user. TensorKit's `@tensor` macro for fermionic contraction is [documented as TODO](https://quantumkithub.github.io/TensorKit.jl/stable/man/tensormanipulations/), requiring manual `braid()` calls; Tenax's `contract()` applies no signs, so a non-planar network needs explicit `swap_gate` insertions.
 - **Codomain/domain partition** — TensorKit tensors are morphisms V₁ ⊗ ... ⊗ Vₙ → W₁ ⊗ ... ⊗ Wₘ with a fixed codomain/domain split. Tenax tensors have no partition — SVD and QR take explicit `left_labels` / `right_labels`.
 - **AD and JIT** — Tenax's JAX backend provides automatic differentiation through all tensor operations (needed for AD-based iPEPS) and JIT compilation for GPU/TPU. TensorKit has experimental AD via ChainRules.jl, but [AD through twist operations is an open issue](https://github.com/QuantumKitHub/TensorKit.jl/issues/216).
-- **Jordan-Wigner** — Tenax's `AutoMPO` automatically inserts Jordan-Wigner strings for fermionic 1D Hamiltonians. TensorKit is a tensor library; JW handling lives in downstream packages like MPSKit.jl.
-- **`braid()` vs `transpose()`** — TensorKit distinguishes `braid()` (general, with `levels` for over/under crossings) from `permute()` (symmetric braiding only). Tenax has only `transpose()`, which suffices for Abelian fermionic systems but cannot handle anyonic braiding.
+- **Jordan-Wigner** — Tenax's `AutoMPO` inserts the Jordan-Wigner strings *between* the operators of a fermionic term; for multi-mode sites (e.g. Hubbard, d=4) the endpoint parity factor is the user's to supply. TensorKit is a tensor library; JW handling lives in downstream packages like MPSKit.jl.
+- **`braid()` vs `transpose()`** — TensorKit distinguishes `braid()` (general, with `levels` for over/under crossings) from `permute()` (symmetric braiding only). Tenax has `transpose()` (with the Koszul sign) plus explicit `swap_gate`; there is no anyonic braiding.
 
 ### Side-by-Side: Symmetric Tensor Creation
 
@@ -407,9 +407,9 @@ T = SymmetricTensor.random_normal(
 - Python ecosystem (NumPy, SciPy, matplotlib, Jupyter)
 - Autodiff — `jax.grad` through fermionic tensor contractions
 - GPU/TPU/Metal — same code on all backends
-- Automatic fermionic contraction signs — no manual `braid()` calls
+- Planar fermionic networks (CTM, RDMs, energies) contract with no sign bookkeeping
 - Built-in algorithms — DMRG, iDMRG, TRG, HOTRG, iPEPS, excitations
-- AutoMPO with automatic Jordan-Wigner string insertion
+- AutoMPO with Jordan-Wigner string insertion between operators
 
 ### What You Lose
 
