@@ -251,7 +251,7 @@ cd tenax && pip install -e ".[dev]"</pre>
   </div>
 </div>
 
-**v0.9.0** is a correctness release: if you have results from earlier versions, re-check them — see the [changelog](https://github.com/tenax-lab/tenax/blob/main/CHANGELOG.md).
+**v0.9.1** fixes dense iDMRG, which did not converge in v0.9.0 and earlier. **v0.9.0** was a correctness release: if you have results from earlier versions, re-check them — see the [changelog](https://github.com/tenax-lab/tenax/blob/main/CHANGELOG.md).
 
 </div>
 </section>
