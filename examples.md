@@ -250,11 +250,18 @@ print(result.energies.shape)  # (20, 3)
 > on 1-site cells too, and `CTMConfig.adjoint_chain_rule="auto"` (the joint VJP:
 > same gradient, shorter compile).
 
+> **New default in v0.9.2:** `gs_reject_energy_rise=True`. The line search
+> accepts a step on a quick CTM probe; if the next step's converged energy is
+> higher than where the search started, the optimizer rolls back to its best
+> point and clears its history. This changes results only where an accept was
+> false; `gs_reject_energy_rise=False` restores the v0.9.1 behaviour.
+> `gs_log_probes=True` logs every line-search probe.
+
 > **Block-sparse AD:** `CTMConfig(ctm_ad_mode="root_implicit_symmetric")` runs
 > the root-implicit engine on `SymmetricTensor` site tensors (1x1 only; pass an
 > explicit symmetric `A_init`). It is expensive (~180 s per gradient at D=2,
 > χ=4) and its gradient accuracy is not yet established — see the
-> [AD paths guide](https://github.com/tenax-lab/tenax/blob/v0.9.1/docs/guide/algorithms/ipeps_ad_paths.md).
+> [AD paths guide](https://github.com/tenax-lab/tenax/blob/v0.9.2/docs/guide/algorithms/ipeps_ad_paths.md).
 
 #### Growing chi inside CTM
 
