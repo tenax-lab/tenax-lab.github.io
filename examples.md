@@ -101,11 +101,16 @@ Infinite DMRG for the Heisenberg chain in the thermodynamic limit:
 from tenax import idmrg, build_bulk_mpo_heisenberg, iDMRGConfig
 
 W = build_bulk_mpo_heisenberg(Jz=1.0, Jxy=1.0)
-config = iDMRGConfig(max_bond_dim=32, max_iterations=100, convergence_tol=1e-8)
+config = iDMRGConfig(max_bond_dim=64, max_iterations=200, convergence_tol=1e-8)
 result = idmrg(W, config)
-print(f"Energy per site: {result.energy_per_site:.6f}")  # ~ -0.4431
-print(f"Converged: {result.converged}")
+print(f"Energy per site: {result.energy_per_site:.6f}")  # -0.443144 (exact 1/4 - ln 2 = -0.443147)
+print(f"Converged: {result.converged}")  # True, after ~145 steps
 ```
+
+> **Fixed in v0.9.1:** dense iDMRG (chains and infinite cylinders) did not
+> converge in v0.9.0 and earlier: its energy sat about 3.5e-4 too high at
+> every bond dimension and `converged` stayed `False`. Upgrade, or on v0.9.0
+> pass `iDMRGConfig(orthogonalize_interval=0)`.
 
 ---
 
@@ -245,11 +250,18 @@ print(result.energies.shape)  # (20, 3)
 > on 1-site cells too, and `CTMConfig.adjoint_chain_rule="auto"` (the joint VJP:
 > same gradient, shorter compile).
 
+> **New default in v0.9.2:** `gs_reject_energy_rise=True`. The line search
+> accepts a step on a quick CTM probe; if the next step's converged energy is
+> higher than where the search started, the optimizer rolls back to its best
+> point and clears its history. This changes results only where an accept was
+> false; `gs_reject_energy_rise=False` restores the v0.9.1 behaviour.
+> `gs_log_probes=True` logs every line-search probe.
+
 > **Block-sparse AD:** `CTMConfig(ctm_ad_mode="root_implicit_symmetric")` runs
 > the root-implicit engine on `SymmetricTensor` site tensors (1x1 only; pass an
 > explicit symmetric `A_init`). It is expensive (~180 s per gradient at D=2,
 > χ=4) and its gradient accuracy is not yet established — see the
-> [AD paths guide](https://github.com/tenax-lab/tenax/blob/v0.9.0/docs/guide/algorithms/ipeps_ad_paths.md).
+> [AD paths guide](https://github.com/tenax-lab/tenax/blob/v0.9.2/docs/guide/algorithms/ipeps_ad_paths.md).
 
 #### Growing chi inside CTM
 
